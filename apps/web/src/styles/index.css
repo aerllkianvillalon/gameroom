@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink-950: 15 17 26;
+  --ink-900: 20 23 34;
+  --ink-800: 27 31 44;
+  --ink-700: 38 43 60;
+  --line: 62 69 94;
+  --paper: 243 238 228;
+  --paper-dim: 176 174 168;
+  --card-red: 229 72 77;
+  --card-yellow: 245 198 61;
+  --card-green: 63 174 106;
+  --card-blue: 59 130 224;
+  --plum: 154 134 201;
+  color-scheme: dark;
+}
+html[data-contrast='high'] { --line: 158 164 190; --paper-dim: 226 223 215; }
+html[data-text='large'] { font-size: 112.5%; }
+
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fade-in 200ms ease-out both; }
+
+@layer base {
+  body { @apply bg-ink-900 font-sans text-paper antialiased; min-height: 100vh; }
+  h1, h2, h3 { @apply font-display tracking-tight; }
+  :focus-visible { outline: 3px solid rgb(var(--card-yellow)); outline-offset: 2px; border-radius: 6px; }
+}
+
+/* Reduced motion: follow the OS unless the player picked a side in Settings. */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion='full']) *, html:not([data-motion='full']) *::before, html:not([data-motion='full']) *::after {
+    animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}
+html[data-motion='reduce'] *, html[data-motion='reduce'] *::before, html[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+}
+
+/* Game cards: a little lift and tilt on hover and keyboard focus. */
+@layer components {
+  .game-card {
+    --tilt: -1deg;
+    border-radius: 1.25rem;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+  }
+  .game-grid > li:nth-child(even) .game-card { --tilt: 1deg; }
+  .game-card:hover, .game-card:focus-visible {
+    transform: translateY(-6px) rotate(var(--tilt));
+    box-shadow: 0 16px 28px -14px rgb(0 0 0 / 0.7);
+    border-color: rgb(var(--paper));
+  }
+  .game-card:focus-visible { border-radius: 1.25rem; }
+  .game-card:active { transform: translateY(-2px) rotate(var(--tilt)); }
+  /* Games that do not fit the picked group: dim the art, dash the border. Text keeps full contrast. */
+  .game-card[data-fit='nofit'] { border-style: dashed; }
+  .game-card[data-fit='nofit'] .game-art { filter: grayscale(1); opacity: 0.45; }
+  .game-card[data-fit='fit'] { border-color: rgb(var(--card-green)); }
+}
+/* No movement when reduced motion is on; the border colour and shadow still show hover and focus. */
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-motion='full']) .game-card:hover, html:not([data-motion='full']) .game-card:focus-visible, html:not([data-motion='full']) .game-card:active { transform: none; }
+}
+html[data-motion='reduce'] .game-card:hover, html[data-motion='reduce'] .game-card:focus-visible, html[data-motion='reduce'] .game-card:active { transform: none; }
+/* High contrast: no dimming at all, the dashed border and the text note carry the message. */
+html[data-contrast='high'] .game-card[data-fit='nofit'] .game-art { filter: none; opacity: 1; }
+
+/* ---- Ambient background: a slow aurora ---- */
+@property --glow { syntax: '<color>'; inherits: true; initial-value: #3b82e0; }
+:root { transition: --glow 700ms ease; }
+
+.ambient { --lx: 0; --ly: 0; }
+/* Outer span leans towards the pointer (translate); inner span drifts (transform). No blur filter, the gradient itself is soft. */
+.aurora { position: absolute; display: block; width: var(--s); height: var(--s); left: var(--x); top: var(--y); opacity: var(--o);
+  translate: calc(var(--lx) * var(--k) * 1px) calc(var(--ly) * var(--k) * 1px); transition: translate 1400ms cubic-bezier(.2,.7,.2,1); }
+.aurora > span { position: absolute; inset: 0; border-radius: 9999px; background: radial-gradient(circle at 50% 50%, var(--c) 0%, transparent 68%);
+  animation: aurora-drift var(--t) ease-in-out infinite alternate; animation-delay: var(--d); will-change: transform; }
+.aurora-a { --s: 62vmax; --x: -18%; --y: -22%; --o: 0.26; --k: 40;  --t: 46s; --d: 0s;   --c: rgb(var(--card-red)); }
+.aurora-b { --s: 52vmax; --x: 58%;  --y: -16%; --o: 0.17; --k: -55; --t: 58s; --d: -14s; --c: rgb(var(--card-yellow)); }
+.aurora-c { --s: 58vmax; --x: 4%;   --y: 52%;  --o: 0.17; --k: 65;  --t: 64s; --d: -28s; --c: rgb(var(--card-green)); }
+.aurora-d { --s: 64vmax; --x: 48%;  --y: 46%;  --o: 0.24; --k: -35; --t: 52s; --d: -8s;  --c: rgb(var(--card-blue)); }
+/* The game on screen: brightest, and eases between games. */
+.aurora-glow { --s: 70vmax; --x: 12%; --y: -30%; --o: 0.42; --k: 25; --t: 40s; --d: -20s; --c: var(--glow); }
+@keyframes aurora-drift {
+  0%   { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+  50%  { transform: translate3d(7vw, 5vh, 0) scale(1.14) rotate(8deg); }
+  100% { transform: translate3d(-5vw, 9vh, 0) scale(1.04) rotate(-6deg); }
+}
+@media (prefers-reduced-motion: reduce) { html:not([data-motion='full']) .aurora > span { animation: none !important; } html:not([data-motion='full']) .aurora { transition: none !important; translate: none !important; } }
+html[data-motion='reduce'] .aurora > span { animation: none !important; }
+html[data-motion='reduce'] .aurora { transition: none !important; translate: none !important; }
+
+.ambient-vignette { background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgb(0 0 0 / 0.38)); }
+.ambient-grain {
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- Menu drawer ---- */
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
+@keyframes fade-only { from { opacity: 0; } to { opacity: 1; } }
+.drawer-panel { animation: drawer-in 220ms cubic-bezier(.2,.8,.2,1) both; }
+.drawer-backdrop { animation: fade-only 200ms ease-out both; }
+
+/* ---- Game slideshow ---- */
+.carousel-track { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.carousel-track::-webkit-scrollbar { display: none; }
+.carousel-slide > a { transition: transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease; }
+.carousel-slide[data-active='false'] > a { transform: scale(0.9); opacity: 0.55; }
+.carousel-slide[data-active='true'] > a { box-shadow: 0 24px 40px -22px rgb(0 0 0 / 0.8); }
+.carousel-art-card { transition: transform 400ms cubic-bezier(.2,.8,.2,1); }
+.carousel-slide[data-active='true'] .carousel-art-card.a { transform: rotate(-14deg) translate(-70px, 6px); }
+.carousel-slide[data-active='true'] .carousel-art-card.b { transform: rotate(12deg) translate(70px, 2px); }
+.carousel-track:focus-visible { outline-offset: -4px; border-radius: 1.5rem; }
+
+/* ---- Entrance and slide motion ---- */
+@keyframes rise { from { opacity: 0; transform: translateY(0.6em) rotate(1.5deg); } to { opacity: 1; transform: none; } }
+.hero-word { display: inline-block; animation: rise 650ms cubic-bezier(.2,.8,.2,1) both; }
+.hero-sub { animation: fade-only 700ms 600ms ease-out both; }
+@keyframes pop { 0% { transform: rotate(-6deg) scale(0.82); } 60% { transform: rotate(-6deg) scale(1.08); } 100% { transform: rotate(-6deg) scale(1); } }
+.carousel-slide[data-active='true'] .art-tile { animation: pop 520ms cubic-bezier(.2,.8,.2,1) both; }
+/* Art follows the pointer a little (--px / --py are set from -1 to 1 by the slide). */
+.par { transition: translate 140ms ease-out; }
+.par-1 { translate: calc(var(--px, 0) * 12px) calc(var(--py, 0) * 9px); }
+.par-2 { translate: calc(var(--px, 0) * -16px) calc(var(--py, 0) * -10px); }
+.par-3 { translate: calc(var(--px, 0) * -7px) calc(var(--py, 0) * -5px); }
+@media (prefers-reduced-motion: reduce) { html:not([data-motion='full']) .par { translate: none !important; } }
+html[data-motion='reduce'] .par { translate: none !important; }
+
+/* Phones: no sideways bounce, tap highlight off, safe areas respected. */
+html, body { overscroll-behavior-x: none; -webkit-tap-highlight-color: transparent; }
+
+/* Slideshow edges fade out to the page on both sides. */
+.carousel-track {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+}
+@media (min-width: 1024px) {
+  .carousel-track {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 16%, #000 84%, transparent 100%);
+  }
+}
+@keyframes chip-in { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: none; } }
+.chip-in { animation: chip-in 220ms cubic-bezier(.2,.8,.2,1) both; }

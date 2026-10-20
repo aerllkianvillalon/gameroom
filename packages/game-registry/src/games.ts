@@ -1,0 +1,80 @@
+import type { GameMeta } from './types';
+
+export const GAMES: readonly GameMeta[] = [
+  {
+    id: 'uno',
+    title: 'Colour Cards',
+    tagline: 'Match colours and numbers. Be first to empty your hand.',
+    description:
+      'A classic colour-and-number matching card game for 2 to 8 players, with an original look. Stack draws, jump in, or swap hands with optional house rules.',
+    category: 'cards',
+    status: 'playable',
+    priority: true,
+    minPlayers: 2,
+    maxPlayers: 8,
+    modes: ['online', 'pass-and-play', 'bots'],
+    accent: '#E5484D',
+    settings: [
+      { key: 'unoPenalty', label: 'Penalty for a missed UNO call', type: 'number', default: 2, min: 0, max: 4, unit: 'cards' },
+      { key: 'turnTimer', label: 'Turn timer', type: 'number', default: 0, min: 0, max: 120, step: 15, unit: 'seconds', help: '0 turns the timer off.' },
+      { key: 'stackDraws', label: 'Stack draw cards', type: 'toggle', default: false, help: 'Answer a Draw Two with another Draw Two.' },
+      { key: 'jumpIn', label: 'Jump in', type: 'toggle', default: false, help: 'Play an identical card out of turn.' },
+      { key: 'sevenZero', label: 'Seven-zero', type: 'toggle', default: false, help: 'A 7 swaps hands with a player; a 0 passes every hand along.' },
+      { key: 'botDifficulty', label: 'Bot difficulty', type: 'select', default: 'medium', options: [
+        { value: 'easy', label: 'Easy' }, { value: 'medium', label: 'Medium' }, { value: 'hard', label: 'Hard' },
+      ] },
+    ],
+    rules: [
+      'Everyone starts with 7 cards. Flip the top card to start the discard pile.',
+      'On your turn, play a card that matches the top card by colour, number or symbol, or play a Wild.',
+      'No match? Draw one card. If you can play it, you may.',
+      'Skip passes over the next player. Reverse flips the direction. Draw Two makes the next player draw 2 and lose their turn.',
+      'Wild lets you pick the colour. Wild Draw Four also makes the next player draw 4 and lose their turn.',
+      'When you are down to one card, call UNO before the next player acts. If someone catches you first, you draw a penalty.',
+      'The first player to empty their hand wins.',
+    ],
+  },
+  {
+    id: 'impostor',
+    title: 'ImpostorWho',
+    tagline: 'Everyone knows the word except the impostor. Find them.',
+    description:
+      'A social deduction game for 3 or more players. Give clues without saying the secret word, talk it out, then vote for who you think is bluffing.',
+    category: 'social',
+    status: 'playable',
+    priority: true,
+    minPlayers: 3,
+    maxPlayers: 12,
+    modes: ['online', 'pass-and-play'],
+    accent: '#9A86C9',
+    settings: [
+      { key: 'impostors', label: 'Impostors', type: 'number', default: 1, min: 1, max: 3 },
+      { key: 'category', label: 'Word category', type: 'select', default: 'objects', options: [
+        { value: 'objects', label: 'Everyday objects' }, { value: 'food', label: 'Food' }, { value: 'animals', label: 'Animals' },
+        { value: 'places', label: 'Places' }, { value: 'movies', label: 'Movies' }, { value: 'games', label: 'Games' },
+      ] },
+      { key: 'impostorKnows', label: 'What the impostor gets', type: 'select', default: 'nothing', options: [
+        { value: 'nothing', label: 'No word' }, { value: 'hint', label: 'A vague hint' }, { value: 'different', label: 'A different word' },
+      ] },
+      { key: 'clueRounds', label: 'Clue rounds', type: 'number', default: 2, min: 1, max: 4 },
+      { key: 'discussionSeconds', label: 'Discussion timer', type: 'number', default: 90, min: 30, max: 300, step: 30, unit: 'seconds' },
+      { key: 'tieBreak', label: 'Tie-breaking vote', type: 'toggle', default: true },
+      { key: 'finalGuess', label: 'Impostor can guess the word if caught', type: 'toggle', default: true },
+    ],
+    rules: [
+      'Everyone except the impostor sees the same secret word. The impostor sees what the host picked: nothing, a hint, or a different word.',
+      'Take turns giving one clue each. A clue should show you know the word without making it obvious to the impostor.',
+      'After the clue rounds, talk it through. Who gave a clue that was too vague, or too specific?',
+      'Everyone votes in secret. Votes are revealed together.',
+      'If the impostor is caught, they may get one guess at the word. A correct guess wins it for them.',
+      'The group wins by catching the impostor. The impostor wins by escaping the vote or guessing the word.',
+    ],
+  },
+  { id: 'trivia', title: 'Trivia Battle', tagline: 'Fast quiz rounds across your favourite topics.', description: 'Multiplayer quizzes with configurable categories.', category: 'trivia', status: 'coming-soon', priority: false, minPlayers: 2, maxPlayers: 12, modes: ['online', 'pass-and-play'], accent: '#F5C63D', settings: [], rules: [] },
+  { id: 'wordbomb', title: 'Word Bomb', tagline: 'Name a word before the fuse runs out.', description: 'Timed word challenges for the whole room.', category: 'words', status: 'coming-soon', priority: false, minPlayers: 2, maxPlayers: 10, modes: ['online', 'pass-and-play'], accent: '#E5484D', settings: [], rules: [] },
+  { id: 'werewolf', title: 'Werewolf', tagline: 'Hidden roles, night actions and a village vote.', description: 'Classic hidden-role game with night phases, discussion and voting.', category: 'social', status: 'coming-soon', priority: false, minPlayers: 5, maxPlayers: 16, modes: ['online', 'pass-and-play'], accent: '#3B82E0', settings: [], rules: [] },
+  { id: 'drawing', title: 'Sketch and Guess', tagline: 'Draw it. Guess it. Argue about it.', description: 'Drawing canvas with word guessing.', category: 'drawing', status: 'coming-soon', priority: false, minPlayers: 3, maxPlayers: 12, modes: ['online'], accent: '#3FAE6A', settings: [], rules: [] },
+  { id: 'wyr', title: 'Would You Rather', tagline: 'Pick a side and defend it.', description: 'Party questions with group voting.', category: 'social', status: 'coming-soon', priority: false, minPlayers: 2, maxPlayers: 16, modes: ['online', 'pass-and-play'], accent: '#9A86C9', settings: [], rules: [] },
+  { id: 'memory', title: 'Memory Match', tagline: 'Flip pairs and out-remember your friends.', description: 'Competitive card-matching game.', category: 'action', status: 'coming-soon', priority: false, minPlayers: 2, maxPlayers: 6, modes: ['online', 'pass-and-play', 'bots'], accent: '#3FAE6A', settings: [], rules: [] },
+  { id: 'reaction', title: 'Reaction Race', tagline: 'Wait for it, then tap first.', description: 'Test who has the fastest reflexes.', category: 'action', status: 'coming-soon', priority: false, minPlayers: 2, maxPlayers: 12, modes: ['online', 'pass-and-play'], accent: '#F5C63D', settings: [], rules: [] },
+];
