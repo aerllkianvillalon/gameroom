@@ -65,7 +65,7 @@ export function Layout() {
         <div className="mx-auto grid h-16 max-w-6xl grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[1fr_auto_1fr] lg:px-10">
           <Link to="/" className="justify-self-start rounded-xl" aria-label="GameRoom home"><Wordmark /></Link>
           <nav aria-label="Sections" className="hidden items-center gap-1 lg:flex">
-            {nav.map((n) => <NavLink key={n.to} to={n.to} end={n.end} className="navlink">{n.label}</NavLink>)}
+            {nav.map((n) => <NavLink key={n.to} to={n.to} className="navlink">{n.label}</NavLink>)}
           </nav>
           <div className="flex items-center justify-self-end gap-2 sm:gap-3">
             <span className="inline-flex items-center gap-2 text-sm font-medium text-paper-dim" title={online ? 'Connected' : 'No internet'}>
