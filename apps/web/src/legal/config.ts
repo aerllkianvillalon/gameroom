@@ -4,17 +4,17 @@
  */
 export const LEGAL = {
   /** The person or company running the service. */
-  operator: '[Your name or company]',
+  operator: 'Elestren Solutions',
   /** Where people can send privacy and legal questions. */
-  contactEmail: '[contact@your-domain.example]',
+  contactEmail: 'elestrensolutions@gmail.com',
   /** Who hosts the game server and the website (they can see connection logs). */
-  hostingProvider: '[Your hosting provider]',
+  hostingProvider: 'Netlify and Render',
   /** Law and courts that apply to the Terms, for example "Singapore". */
-  governingLaw: '[Your country or state]',
+  governingLaw: 'the Philippines',
   /** Date these pages were last changed. Update it whenever you edit the text. */
   updated: '21 October 2026',
   /** How long the hosting provider keeps request logs. Check your host's settings. */
-  logRetention: '[number] days',
+  logRetention: '30 days',
 } as const;
 
 /** Mirrors the server's room timing in apps/server/src/hosts/types.ts. Update both together. */
