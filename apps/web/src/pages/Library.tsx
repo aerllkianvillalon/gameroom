@@ -26,20 +26,20 @@ export function Library() {
   const fitOf = (g: (typeof playable)[number]): Fit => (!group ? 'neutral' : fitsGroup(g, group) ? 'fit' : 'nofit');
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-4">
       <div>
-        <h1 className="text-4xl font-bold">All games</h1>
-        <p className="mt-2 text-lg text-paper-dim">Pick one to see how it works, then play.</p>
+        <h1 className="page-title">All games</h1>
+        <p className="lede mt-3">Pick one to see how it works, then play.</p>
       </div>
 
       <GroupPicker value={group} onChange={setGroup} status={status} />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4">
         <label className="sr-only" htmlFor="search">Search games</label>
-        <input id="search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search games" className="min-h-[44px] w-full rounded-lg border border-line bg-ink-800 px-3 sm:max-w-xs" />
-        <div role="group" aria-label="Category" className="flex flex-wrap gap-2">
+        <input id="search" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search games" className="field sm:max-w-sm" />
+        <div role="group" aria-label="Category" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 [scrollbar-width:none]">
           {cats.map((c) => (
-            <button key={c} type="button" aria-pressed={cat === c} onClick={() => setCat(c)} className={`min-h-[44px] rounded-full border px-4 font-medium ${cat === c ? 'border-paper bg-paper text-ink-900' : 'border-line text-paper-dim hover:bg-ink-700'}`}>
+            <button key={c} type="button" aria-pressed={cat === c} onClick={() => setCat(c)} className="chip">
               {c === 'all' ? 'All' : CATEGORY_LABELS[c]}
             </button>
           ))}
@@ -58,9 +58,9 @@ export function Library() {
 
       {soon.length > 0 && (
         <section aria-labelledby="soon">
-          <h2 id="soon" className="mb-3 text-xl font-bold text-paper-dim">Coming soon</h2>
-          <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {soon.map((g) => <li key={g.id}><SoonCard game={g} /></li>)}
+          <h2 id="soon" className="section-title mb-3 text-paper-dim">Coming soon</h2>
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {soon.map((g) => <li key={g.id} className="min-w-0"><SoonCard game={g} /></li>)}
           </ul>
         </section>
       )}

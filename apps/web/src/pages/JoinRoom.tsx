@@ -41,17 +41,17 @@ export function JoinRoom() {
   };
 
   return (
-    <div className="max-w-md">
-      <h1 className="text-4xl font-bold">Join a room</h1>
-      <p className="mt-2 text-paper-dim">Ask the host for the 5-character code.</p>
-      {online.session && <p role="status" className="mt-4 rounded-lg border border-card-yellow bg-ink-800 p-3">You are already in room {online.session.code}. Leave it first to join another.</p>}
+    <div className="mx-auto max-w-md pb-4 lg:mx-0">
+      <h1 className="page-title">Join a room</h1>
+      <p className="lede mt-3">Ask the host for the 5-character code.</p>
+      {online.session && <p role="status" className="hint mt-4">You are already in room {online.session.code}. Leave it first to join another.</p>}
       {recent.length > 0 && !online.session && (
         <div className="mt-6">
-          <h2 className="mb-2 font-medium">Recent rooms</h2>
+          <h2 className="section-title mb-2 !text-lg">Recent rooms</h2>
           <div className="flex flex-wrap gap-2">
             {recent.map((r) => (
-              <button key={r.code} type="button" onClick={() => setCode(r.code)} className="min-h-[44px] rounded-lg border border-line bg-ink-800 px-3 hover:bg-ink-700">
-                <span className="font-display tracking-widest">{r.code}</span>
+              <button key={r.code} type="button" onClick={() => setCode(r.code)} className="chip !bg-ink-800/80 !text-paper">
+                <span className="font-display font-extrabold tracking-[0.18em] text-paper">{r.code}</span>
                 <span className="ml-2 text-sm text-paper-dim">{getGame(r.gameId)?.title ?? r.gameId}</span>
               </button>
             ))}
@@ -62,23 +62,23 @@ export function JoinRoom() {
       <div className="mt-6 space-y-5">
         <div>
           <label htmlFor="code" className="mb-1 block font-medium">Room code</label>
-          <input id="code" value={code} onChange={(e) => setCode(e.target.value)} autoCapitalize="characters" autoComplete="off" aria-invalid={Boolean(errors.code)} aria-describedby={errors.code ? 'code-err' : undefined} className="min-h-[44px] w-full rounded-lg border border-line bg-ink-800 px-3 font-display text-xl uppercase tracking-widest" />
+          <input id="code" value={code} onChange={(e) => setCode(e.target.value)} autoCapitalize="characters" autoComplete="off" aria-invalid={Boolean(errors.code)} aria-describedby={errors.code ? 'code-err' : undefined} className="field !min-h-[76px] !rounded-[20px] text-center font-display text-[2.5rem] font-extrabold uppercase tracking-[0.28em] placeholder:tracking-[0.28em]" spellCheck={false} inputMode="text" placeholder="K7M2X" />
           {errors.code && <p id="code-err" role="alert" className="mt-1 text-card-red">{errors.code}</p>}
         </div>
         <div>
           <label htmlFor="jname" className="mb-1 block font-medium">Your name</label>
-          <input id="jname" value={name} maxLength={MAX_NAME_LENGTH} onChange={(e) => setName(e.target.value)} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'name-err' : undefined} className="min-h-[44px] w-full rounded-lg border border-line bg-ink-800 px-3" />
+          <input id="jname" value={name} maxLength={MAX_NAME_LENGTH} onChange={(e) => setName(e.target.value)} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'name-err' : undefined} className="field w-full" />
           {errors.name && <p id="name-err" role="alert" className="mt-1 text-card-red">{errors.name}</p>}
         </div>
         {needsPassword && (
           <div>
             <label htmlFor="jpw" className="mb-1 block font-medium">Room password</label>
-            <input id="jpw" value={password} autoComplete="off" onChange={(e) => setPassword(e.target.value)} className="min-h-[44px] w-full rounded-lg border border-line bg-ink-800 px-3" />
+            <input id="jpw" value={password} autoComplete="off" onChange={(e) => setPassword(e.target.value)} className="field w-full" />
           </div>
         )}
-        <Button onClick={() => void submit()} disabled={busy || Boolean(online.session)}>{busy ? 'Connecting...' : 'Join room'}</Button>
+        <Button className="btn-lg w-full" onClick={() => void submit()} disabled={busy || Boolean(online.session)}>{busy ? 'Connecting...' : 'Join room'}</Button>
         {busy && <p role="status" className="text-sm text-paper-dim">Free hosting puts the server to sleep when idle, so the first connection can take up to a minute.</p>}
-        {errors.form && <p role="alert" className="rounded-lg border border-card-red bg-ink-800 p-4">{errors.form}</p>}
+        {errors.form && <p role="alert" className="hint hint-red">{errors.form}</p>}
       </div>
     </div>
   );

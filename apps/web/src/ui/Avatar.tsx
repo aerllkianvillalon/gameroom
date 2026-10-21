@@ -15,7 +15,7 @@ const AVATARS: Record<AvatarId, { Icon: LucideIcon; bg: string }> = {
 export function Avatar({ id, size = 40 }: { id: AvatarId; size?: number }) {
   const { Icon, bg } = AVATARS[id];
   return (
-    <span className={`inline-flex shrink-0 items-center justify-center rounded-full text-ink-950 ${bg}`} style={{ width: size, height: size }} aria-hidden="true">
+    <span className={`inline-flex shrink-0 items-center justify-center rounded-full text-ink-950 shadow-[inset_0_-3px_0_rgb(0_0_0/0.18),inset_0_2px_0_rgb(255_255_255/0.3)] ${bg}`} style={{ width: size, height: size }} aria-hidden="true">
       <Icon size={size * 0.55} strokeWidth={2.25} />
     </span>
   );

@@ -10,13 +10,13 @@ export function GameIcon({ id, size = 24 }: { id: string; size?: number }) {
 }
 
 const STATUS: Record<GameStatus, { label: string; cls: string }> = {
-  playable: { label: 'Playable', cls: 'border-card-green text-card-green' },
-  'in-development': { label: 'In development', cls: 'border-card-yellow text-card-yellow' },
-  'coming-soon': { label: 'Coming soon', cls: 'border-line text-paper-dim' },
+  playable: { label: 'Playable', cls: 'bg-card-green/15 text-card-green shadow-[inset_0_0_0_1.5px_rgb(var(--card-green)/0.7)]' },
+  'in-development': { label: 'In development', cls: 'bg-card-yellow/10 text-card-yellow shadow-[inset_0_0_0_1.5px_rgb(var(--card-yellow)/0.7)]' },
+  'coming-soon': { label: 'Coming soon', cls: 'bg-ink-950/50 text-paper-dim shadow-[inset_0_0_0_1.5px_rgb(var(--line))]' },
 };
 export function StatusBadge({ status }: { status: GameStatus }) {
   const s = STATUS[status];
-  return <span className={`inline-block rounded-full border px-2.5 py-0.5 text-sm font-medium ${s.cls}`}>{s.label}</span>;
+  return <span className={`inline-block shrink-0 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[0.8125rem] font-semibold ${s.cls}`}>{s.label}</span>;
 }
 
 export const playersLabel = (min: number, max: number) => (min === max ? `${min} players` : `${min} to ${max} players`);

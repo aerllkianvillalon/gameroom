@@ -17,8 +17,8 @@ export function UnoTable() {
   if (!room || !session || room.code !== code.toUpperCase() || session.room.code !== room.code) {
     return (
       <div>
-        <h1 className="text-3xl font-bold">No game in progress</h1>
-        <p className="mt-2 max-w-md text-paper-dim">Games live only while this tab stays open. Reloading the page ends them.</p>
+        <h1 className="page-title">No game in progress</h1>
+        <p className="lede mt-3">Games live only while this tab stays open. Reloading the page ends them.</p>
         <LinkButton to="/create?game=uno" className="mt-6">Start a new room</LinkButton>
       </div>
     );
@@ -57,10 +57,10 @@ function LocalTable({ session, code }: { session: UnoSession; code: string }) {
   const rematch = () => { session.restart(); setUnlock(null); setGame((g) => g + 1); };
 
   const handArea = needHandoff ? (
-    <div className="rounded-xl border border-card-yellow bg-ink-800 p-6 text-center">
-      <h2 className="text-2xl font-bold">Pass the device to {session.nameOf(cur)}</h2>
+    <div className="panel p-6 text-center">
+      <h2 className="section-title !text-[1.75rem]">Pass the device to {session.nameOf(cur)}</h2>
       <p className="mx-auto mt-2 max-w-sm text-paper-dim">Everyone else, look away. Hands stay hidden until {session.nameOf(cur)} confirms.</p>
-      <Button className="mt-5" onClick={() => setUnlock({ id: cur, seq })}>I am {session.nameOf(cur)}. Show my hand</Button>
+      <Button className="btn-lg mt-6 w-full sm:w-auto" onClick={() => setUnlock({ id: cur, seq })}>I am {session.nameOf(cur)}. Show my hand</Button>
     </div>
   ) : !priv ? <p className="text-paper-dim">Waiting for {session.nameOf(cur)}...</p> : undefined;
 

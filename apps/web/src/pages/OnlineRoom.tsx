@@ -20,8 +20,8 @@ import { addRecentRoom } from '../storage/recent';
 export function ConnectingNote({ slow }: { slow: boolean }) {
   return (
     <div role="status">
-      <h1 className="text-3xl font-bold">Connecting...</h1>
-      <p className="mt-2 max-w-md text-paper-dim">{slow ? 'This is taking a while. Free hosting puts the server to sleep when nobody is playing, and waking it can take about a minute. Hang on.' : 'Reaching the game server.'}</p>
+      <h1 className="page-title">Connecting...</h1>
+      <p className="lede mt-3">{slow ? 'This is taking a while. Free hosting puts the server to sleep when nobody is playing, and waking it can take about a minute. Hang on.' : 'Reaching the game server.'}</p>
     </div>
   );
 }
@@ -39,8 +39,8 @@ export function OnlineRoom() {
   if (!st.session || st.session.code !== code.toUpperCase()) {
     return (
       <div>
-        <h1 className="text-3xl font-bold">{st.closed ? 'You are no longer in this room' : 'You are not in this room'}</h1>
-        <p className="mt-2 max-w-md text-paper-dim">{st.closed ? CLOSED_MESSAGES[st.closed] : 'Join with the code, or start your own room.'}</p>
+        <h1 className="page-title">{st.closed ? 'You are no longer in this room' : 'You are not in this room'}</h1>
+        <p className="lede mt-3">{st.closed ? CLOSED_MESSAGES[st.closed] : 'Join with the code, or start your own room.'}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <LinkButton to={`/join?code=${encodeURIComponent(code)}`}>Join with a code</LinkButton>
           <LinkButton to="/create" variant="secondary">Create a room</LinkButton>
@@ -80,9 +80,9 @@ function OnlineLobby() {
   };
 
   return (
-    <div className="grid gap-10 md:grid-cols-[1.2fr_1fr]">
+    <div className="grid gap-10 pb-4 md:grid-cols-[1.2fr_1fr]">
       <section>
-        <h1 className="text-4xl font-bold">{game?.title ?? 'Lobby'}</h1>
+        <h1 className="page-title">{game?.title ?? 'Lobby'}</h1>
         <p className="mt-2 text-paper-dim">Room code</p>
         <p className="font-display text-5xl font-bold tracking-widest" aria-label={`Room code ${room.code.split('').join(' ')}`}>{room.code}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -90,10 +90,10 @@ function OnlineLobby() {
           {room.hasPassword && <span className="text-sm text-paper-dim">Friends will need the password too.</span>}
         </div>
 
-        <h2 className="mt-8 text-xl font-bold">Players ({room.members.length} of {room.maxPlayers})</h2>
+        <h2 className="section-title mt-8">Players <span className="text-paper-dim">{room.members.length} of {room.maxPlayers}</span></h2>
         <ul className="mt-3 space-y-2">
           {room.members.map((m) => (
-            <li key={m.id} className="flex items-center gap-3 rounded-lg border border-line bg-ink-800 p-3">
+            <li key={m.id} className="panel-flat flex items-center gap-3 p-3">
               <Avatar id={m.avatar} />
               <span className="flex-1 font-semibold">
                 {m.name}{m.id === room.you && <span className="ml-2 text-sm font-normal text-paper-dim">You</span>}
@@ -110,22 +110,22 @@ function OnlineLobby() {
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           {isHost
-            ? <Button disabled={problem !== null} onClick={start} aria-describedby={problem ? 'start-reason' : undefined}>Start game</Button>
-            : <Button variant={me?.ready ? 'secondary' : 'primary'} aria-pressed={Boolean(me?.ready)} onClick={() => void run(client.setReady(!me?.ready))}>{me?.ready ? 'Not ready' : 'I am ready'}</Button>}
+            ? <Button className="btn-lg" disabled={problem !== null} onClick={start} aria-describedby={problem ? 'start-reason' : undefined}>Start game</Button>
+            : <Button className="btn-lg" variant={me?.ready ? 'secondary' : 'primary'} aria-pressed={Boolean(me?.ready)} onClick={() => void run(client.setReady(!me?.ready))}>{me?.ready ? 'Not ready' : 'I am ready'}</Button>}
           <Button variant="ghost" onClick={leave}>Leave room</Button>
         </div>
         {isHost && problem && <p id="start-reason" className="mt-3 max-w-md text-paper-dim">{problem}</p>}
         {!isHost && <p className="mt-3 text-paper-dim">Waiting for the host to start.</p>}
       </section>
       <section>
-        <h2 className="mb-3 text-xl font-bold">Settings</h2>
+        <h2 className="section-title mb-4">Settings</h2>
         {game && (isHost
           ? <SettingsForm defs={game.settings} values={room.settings} onChange={(p) => void run(client.updateSettings(p))} />
           : <ul className="space-y-1 text-paper-dim">{game.settings.map((s) => <li key={s.key}>{s.label}: <span className="text-paper">{String(room.settings[s.key])}</span></li>)}</ul>)}
         {isHost && room.gameId === 'impostor' && packs.length > 0 && (
           <div className="mt-5">
             <label htmlFor="pack" className="mb-1 block font-medium">Use one of my word packs</label>
-            <select id="pack" value={packId} onChange={(e) => setPackId(e.target.value)} className="min-h-[44px] rounded-lg border border-line bg-ink-800 px-3">
+            <select id="pack" value={packId} onChange={(e) => setPackId(e.target.value)} className="field">
               <option value="">No, use the category above</option>
               {packs.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.words.length} words)</option>)}
             </select>

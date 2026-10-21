@@ -21,27 +21,30 @@ export const TUTORIAL = [
 ];
 
 export function Panel({ children, tone = 'plum' }: { children: ReactNode; tone?: 'plum' | 'plain' }) {
-  return <div className={`fade-in rounded-2xl border p-6 ${tone === 'plum' ? 'border-plum/40 bg-[#1a1626]' : 'border-line bg-ink-800'}`}>{children}</div>;
+  return <div className={`fade-in p-5 sm:p-7 ${tone === 'plum' ? 'panel panel-plum' : 'panel'}`}>{children}</div>;
 }
 
 export function RoleCard({ view, onHide }: { view: ImpostorPrivateView; onHide: () => void | Promise<void> }) {
+  const impostor = view.role === 'impostor';
   return (
     <Panel>
       <div className="text-center">
-        <Eye className="mx-auto text-plum" size={32} aria-hidden="true" />
-        {view.role === 'impostor' ? (
-          <>
-            <h2 className="mt-3 text-3xl font-bold text-card-red">You are the impostor</h2>
-            <p className="mt-3 text-lg">{view.hint ? <>Your hint: <strong>{view.hint}</strong></> : 'You get no word. Listen closely and blend in.'}</p>
-          </>
-        ) : (
-          <>
-            <h2 className="mt-3 text-xl font-bold text-paper-dim">{view.role === 'crew' ? 'You are on the crew. The word is' : 'Your word is'}</h2>
-            <p className="mt-2 font-display text-5xl font-bold">{view.word}</p>
-          </>
-        )}
-        <p className="mx-auto mt-4 max-w-sm text-sm text-paper-dim">Remember it, then hide this screen before passing the device on.</p>
-        <Button className="mt-5" onClick={onHide}>Hide and continue</Button>
+        <p className="mx-auto inline-flex items-center gap-2 text-sm font-semibold text-paper-dim"><Eye className="text-plum" size={18} aria-hidden="true" /> Only you can see this</p>
+        <div className={`secret-card mx-auto mt-4 max-w-sm rounded-[24px] px-5 py-8 ${impostor ? 'secret-card-dark' : ''}`}>
+          {impostor ? (
+            <>
+              <h2 className="font-display text-[2.25rem] font-extrabold leading-none tracking-[-0.03em] text-card-red">You are the impostor</h2>
+              <p className="mt-4 text-lg">{view.hint ? <>Your hint: <strong>{view.hint}</strong></> : 'You get no word. Listen closely and blend in.'}</p>
+            </>
+          ) : (
+            <>
+              <h2 className="text-base font-semibold text-ink-700">{view.role === 'crew' ? 'You are on the crew. The word is' : 'Your word is'}</h2>
+              <p className="mt-2 break-words font-display text-[clamp(2.5rem,13vw,3.75rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">{view.word}</p>
+            </>
+          )}
+        </div>
+        <p className="mx-auto mt-5 max-w-sm text-sm text-paper-dim">Remember it, then hide this screen before passing the device on.</p>
+        <Button className="btn-lg mt-4 w-full sm:w-auto" onClick={onHide}>Hide and continue</Button>
       </div>
     </Panel>
   );
@@ -53,14 +56,14 @@ export function RevealScreen({ reveal, nameOf, onContinue }: { reveal: Reveal; n
   const ranked = Object.keys(tally).sort((a, b) => (tally[b] ?? 0) - (tally[a] ?? 0));
   return (
     <Panel>
-      <h2 className="text-2xl font-bold">{reveal.stage === 'vote' ? 'Votes revealed' : 'Tie-break votes revealed'}</h2>
+      <h2 className="section-title !text-[1.75rem]">{reveal.stage === 'vote' ? 'Votes revealed' : 'Tie-break votes revealed'}</h2>
       <ol className="mt-4 space-y-1">
-        {ranked.map((id) => <li key={id} className="flex justify-between rounded-lg bg-ink-800 px-3 py-2"><span className="font-semibold">{nameOf(id)}</span><span>{tally[id]} {tally[id] === 1 ? 'vote' : 'votes'}</span></li>)}
+        {ranked.map((id) => <li key={id} className="panel-flat flex justify-between px-4 py-3"><span className="font-semibold">{nameOf(id)}</span><span>{tally[id]} {tally[id] === 1 ? 'vote' : 'votes'}</span></li>)}
       </ol>
       <ul className="mt-4 space-y-1 text-sm text-paper-dim">
         {Object.entries(reveal.votes).map(([from, to]) => <li key={from}>{nameOf(from)} voted for {nameOf(to)}</li>)}
       </ul>
-      {onContinue && <Button className="mt-5" onClick={onContinue}>Continue</Button>}
+      {onContinue && <Button className="btn-lg mt-6 w-full sm:w-auto" onClick={onContinue}>Continue</Button>}
     </Panel>
   );
 }
@@ -70,12 +73,16 @@ export function Tutorial({ onClose }: { onClose: () => void }) {
   const step = TUTORIAL[i] as (typeof TUTORIAL)[number];
   const last = i === TUTORIAL.length - 1;
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-ink-950/80 p-4">
-      <div role="dialog" aria-modal="true" aria-label="How to play ImpostorWho" className="w-full max-w-md rounded-xl border border-plum/40 bg-[#1a1626] p-6">
-        <p className="text-sm text-paper-dim">Step {i + 1} of {TUTORIAL.length}</p>
-        <h2 className="mt-1 text-2xl font-bold">{step.title}</h2>
-        <p className="mt-3 text-lg">{step.body}</p>
-        <div className="mt-6 flex flex-wrap justify-between gap-2">
+    <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center sm:p-4">
+      <div className="sheet-backdrop absolute inset-0 bg-ink-950/75 backdrop-blur-[3px]" aria-hidden="true" />
+      <div role="dialog" aria-modal="true" aria-label="How to play ImpostorWho" className="sheet-panel panel-plum relative w-full max-w-md rounded-t-[32px] px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[inset_0_1.5px_0_rgb(var(--plum)/0.5),0_-30px_60px_-20px_rgb(0_0_0/0.8)] sm:rounded-[32px] sm:px-6 sm:pt-6">
+        <div className="sheet-grabber sm:hidden" aria-hidden="true" />
+        <div className="flex gap-1.5" role="img" aria-label={`Step ${i + 1} of ${TUTORIAL.length}`}>
+          {TUTORIAL.map((_, k) => <span key={k} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${k <= i ? 'bg-plum' : 'bg-line/60'}`} />)}
+        </div>
+        <h2 key={i} className="fade-in section-title mt-5 !text-[1.875rem] !leading-[1.02]">{step.title}</h2>
+        <p key={`b${i}`} className="fade-in mt-3 text-[1.0625rem] leading-relaxed text-paper/90">{step.body}</p>
+        <div className="mt-7 flex items-center justify-between gap-2">
           <Button variant="ghost" onClick={onClose}>Skip</Button>
           <div className="flex gap-2">
             {i > 0 && <Button variant="secondary" onClick={() => setI(i - 1)}>Back</Button>}
@@ -86,4 +93,3 @@ export function Tutorial({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
-

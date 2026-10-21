@@ -14,8 +14,12 @@ export default {
         plum: c('plum'),
       },
       fontFamily: {
-        display: ['"Space Grotesk Variable"', 'Space Grotesk', 'system-ui', 'sans-serif'],
+        // Bricolage Grotesque: a characterful grotesque with ink traps; heavy weights feel like printed game boxes.
+        display: ['"Bricolage Grotesque Variable"', '"Bricolage Grotesque"', '"Space Grotesk Variable"', 'system-ui', 'sans-serif'],
         sans: ['"Inter Variable"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+      },
+      boxShadow: {
+        lip: '0 4px 0 rgb(0 0 0 / 0.35)',
       },
     },
   },

@@ -42,3 +42,12 @@ Rooms live in server memory: a restart (or a free host sleeping) ends them. Play
 - The online flow has never been exercised by a real browser against a real server. `npm run e2e` is the first check.
 - Local rooms live in memory and close on reload. Server rooms end on restart.
 - Not done: LAN mode (needs a mDNS/host-discovery design), component tests, an installable-app icon set in PNG sizes (only an SVG icon exists), audio for ImpostorWho.
+
+## Design notes
+The look is "game night at a card table": deep indigo felt, cream card stock, and the four card colours as the only accents.
+- Tokens live in `apps/web/src/styles/index.css` (colours as space-separated RGB so Tailwind alpha works) and `tailwind.config.ts`.
+- Display type is Bricolage Grotesque (`@fontsource-variable/bricolage-grotesque`, run `npm install` to pick it up); body is Inter.
+- Component classes (`.btn`, `.field`, `.panel`, `.choice`, `.switch`, `.pcard`, `.felt`) sit in `@layer components`, so Tailwind utilities can still override them.
+- Phones get a bottom tab bar (`components/TabBar.tsx`) with a "More" sheet; it is hidden at a table (`/play/*`, `/room/*`) so the game owns the screen. The UNO hand is a sticky tray at the bottom.
+- Art for each game is built from the game's own pieces in `ui/GameArt.tsx`. The home hero fan is `HeroFan` in `pages/Home.tsx`.
+- Motion: one orchestrated moment (headline and card fan on the home page), plus motion that answers a tap (button press, card land, sheet slide). Everything respects the Motion setting and `prefers-reduced-motion`.

@@ -1,15 +1,24 @@
 import { listGames } from '@party/game-registry';
+import { GameArt } from '../ui/GameArt';
 
 export function Rules() {
   const games = listGames().filter((g) => g.rules.length > 0);
   return (
-    <div className="max-w-prose">
-      <h1 className="text-4xl font-bold">Rules</h1>
-      <p className="mt-2 text-paper-dim">Short rules for every game that has gameplay in progress. Planned games appear once they are built.</p>
+    <div className="max-w-[44rem] pb-4">
+      <h1 className="page-title">Rules</h1>
+      <p className="lede mt-3">Short rules for every game that has gameplay in progress. Planned games appear once they are built.</p>
       {games.map((g) => (
-        <section key={g.id} className="mt-10" aria-labelledby={`r-${g.id}`}>
-          <h2 id={`r-${g.id}`} className="border-l-8 pl-3 text-2xl font-bold" style={{ borderColor: g.accent }}>{g.title}</h2>
-          <ol className="mt-3 list-decimal space-y-2 pl-6">{g.rules.map((r) => <li key={r}>{r}</li>)}</ol>
+        <section key={g.id} className="panel mt-8 overflow-hidden" aria-labelledby={`r-${g.id}`}>
+          <GameArt id={g.id} accent={g.accent} className="h-28 sm:h-32" />
+          <div className="p-5 sm:p-6">
+            <h2 id={`r-${g.id}`} className="section-title !text-[1.875rem]">{g.title}</h2>
+            <ol className="mt-4 space-y-3">{g.rules.map((r, i) => (
+              <li key={r} className="flex gap-3 text-[1.0625rem] leading-relaxed">
+                <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold text-ink-950" style={{ background: g.accent }} aria-hidden="true">{i + 1}</span>
+                <span>{r}</span>
+              </li>
+            ))}</ol>
+          </div>
         </section>
       ))}
     </div>

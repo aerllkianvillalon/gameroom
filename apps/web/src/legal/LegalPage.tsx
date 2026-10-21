@@ -11,10 +11,10 @@ export const legalLinks = [
 
 export function LegalPage({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   return (
-    <article className="max-w-prose">
-      <h1 className="text-4xl font-bold">{title}</h1>
-      <p className="mt-1 text-sm text-paper-dim">Last updated {LEGAL.updated}</p>
-      <p className="mt-4 text-lg text-paper-dim">{intro}</p>
+    <article className="max-w-[44rem]">
+      <h1 className="page-title">{title}</h1>
+      <p className="pill mt-3">Last updated {LEGAL.updated}</p>
+      <p className="lede mt-5 !text-[1.1875rem]">{intro}</p>
       {children}
     </article>
   );
@@ -22,16 +22,16 @@ export function LegalPage({ title, intro, children }: { title: string; intro: st
 
 export function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
-    <section aria-labelledby={id} className="mt-10">
-      <h2 id={id} className="text-2xl font-bold">{title}</h2>
-      <div className="mt-3 space-y-3 leading-relaxed [&_ul]:list-disc [&_ul]:space-y-1.5 [&_ul]:pl-6">{children}</div>
+    <section aria-labelledby={id} className="mt-12">
+      <h2 id={id} className="section-title">{title}</h2>
+      <div className="mt-3 space-y-3 text-[1.0625rem] leading-[1.7] text-paper/90 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6 [&_li::marker]:text-card-yellow">{children}</div>
     </section>
   );
 }
 
 /** Short summary box at the top of a page. */
 export function Summary({ children }: { children: ReactNode }) {
-  return <div className="mt-6 rounded-xl border border-line bg-ink-800 p-5 leading-relaxed">{children}</div>;
+  return <div className="panel-flat mt-6 p-5 leading-relaxed">{children}</div>;
 }
 
 export function A({ to, children }: { to: string; children: ReactNode }) {
