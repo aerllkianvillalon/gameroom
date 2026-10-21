@@ -1,11 +1,15 @@
 import { fail, ok, type PlayerId, type Result } from '@party/game-engine';
 import {
-  botLevelFromSettings, chooseBotAction, configFromSettings, currentPlayer, step, unoEngine, withClock,
+  botLevelFromSettings, chooseBotAction, chooseBotUnoReaction, configFromSettings, currentPlayer, step, unoEngine, withClock,
   type UnoAction, type UnoState,
 } from '@party/uno-engine';
 import type { Cancel, GameHost, HostCtx } from './types';
 
 const ACTIONS = new Set(['play', 'draw', 'pass', 'call-uno', 'catch-uno']);
+
+const UNO_WINDOW_MS = 1800;
+const UNO_REACT_MIN_MS = 500;
+const UNO_REACT_MAX_MS = 1600;
 
 export class UnoHost implements GameHost {
   readonly gameId = 'uno';
@@ -14,6 +18,7 @@ export class UnoHost implements GameHost {
   private readonly level;
   private cancelMove: Cancel | null = null;
   private cancelClock: Cancel | null = null;
+  private cancelUno: Cancel[] = [];
   /** Away players the server has already played for once; their later turns go faster. */
   private chain = new Set<PlayerId>();
   private disposed = false;
@@ -47,6 +52,7 @@ export class UnoHost implements GameHost {
     this.disposed = true;
     this.cancelMove?.();
     this.cancelClock?.();
+    this.clearUno();
   }
 
   private commit(next: UnoState) {
@@ -59,13 +65,38 @@ export class UnoHost implements GameHost {
     this.cancelMove?.();
     this.cancelClock?.();
     this.cancelMove = this.cancelClock = null;
+    this.clearUno();
     if (this.disposed || this.state.winner) return;
     const cur = currentPlayer(this.state);
     const t = this.ctx.timing;
-    const delay = this.bots.has(cur) ? t.botDelayMs : this.ctx.isAway(cur) ? (this.chain.has(cur) ? 1500 : t.awayDelayMs) : null;
+    // While a UNO window is open, bot moves wait so humans get a fair race to press UNO.
+    const unoOpen = this.state.unoPending !== null;
+    const delay = this.bots.has(cur) ? t.botDelayMs + (unoOpen ? UNO_WINDOW_MS : 0) : this.ctx.isAway(cur) ? (this.chain.has(cur) ? 1500 : t.awayDelayMs) : null;
     if (delay !== null) this.cancelMove = this.ctx.schedule(() => this.autoMove(), delay);
+    if (unoOpen) this.planUnoReactions();
     const dl = this.state.turnDeadline;
     if (dl !== null) this.cancelClock = this.ctx.schedule(() => this.timeout(), Math.max(0, dl - this.ctx.now()));
+  }
+
+  private clearUno() {
+    this.cancelUno.forEach((c) => c());
+    this.cancelUno = [];
+  }
+
+  /** Each bot may press UNO after its own random reaction time, so it is a real race with the humans. */
+  private planUnoReactions() {
+    for (const bot of this.bots) {
+      const wait = UNO_REACT_MIN_MS + this.ctx.rng.next() * (UNO_REACT_MAX_MS - UNO_REACT_MIN_MS);
+      this.cancelUno.push(this.ctx.schedule(() => this.botUno(bot), wait));
+    }
+  }
+
+  private botUno(bot: PlayerId) {
+    if (this.disposed) return;
+    const action = chooseBotUnoReaction(this.state, bot, this.level, this.ctx.rng);
+    if (!action) return;
+    const r = step(this.state, bot, action, this.ctx.rng);
+    if (r.ok) this.commit(r.value);
   }
 
   /** A bot's move, or a disconnected human's move (played carefully-but-simply, like an easy bot). */

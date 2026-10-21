@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { RotateCcw, RotateCw, Timer } from 'lucide-react';
+import { LogOut, RotateCcw, RotateCw, Timer } from 'lucide-react';
 import type { AvatarId, PlayerId } from '@party/game-engine';
 import { COLORS, type Card, type Color, type UnoAction, type UnoPrivateView, type UnoPublicView } from '@party/uno-engine';
 import { Avatar } from '../../ui/Avatar';
@@ -34,6 +34,32 @@ export function Modal({ title, onClose, children }: { title: string; onClose?: (
   );
 }
 
+/**
+ * The UNO window. Whoever presses first wins: the player on one card is safe,
+ * anyone else makes them draw. It is the same big button for everyone, so nobody has a head start.
+ */
+function UnoRace({ target, targetName, viewerId, shared, onPress, onShared }: {
+  target: PlayerId; targetName: string; viewerId: PlayerId | null;
+  shared?: UnoBoardProps['sharedUno'];
+  onPress: (a: UnoAction) => Promise<void>;
+  onShared: (fn: () => Promise<string | null>) => Promise<void>;
+}) {
+  const big = 'btn-lg w-full !min-h-[64px] text-2xl sm:w-auto sm:min-w-[16rem]';
+  return (
+    <div role="group" aria-label="UNO" className="panel flex flex-col items-stretch gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+      <p className="font-display text-lg font-extrabold leading-tight">{targetName} is down to one card!<span className="block text-sm font-semibold text-paper-dim">First to press UNO wins the race.</span></p>
+      {shared ? (
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button className={big} onClick={() => void onShared(shared.call)}>UNO! ({targetName})</Button>
+          <Button className={big} onClick={() => void onShared(shared.catchIt)}>UNO! (everyone else)</Button>
+        </div>
+      ) : viewerId ? (
+        <Button className={big} onClick={() => void onPress(viewerId === target ? { type: 'call-uno' } : { type: 'catch-uno', target })}>UNO!</Button>
+      ) : null}
+    </div>
+  );
+}
+
 export interface UnoBoardProps {
   pub: UnoPublicView;
   /** Null when this device should not show a hand (pass-and-play between turns, or a spectator). */
@@ -49,16 +75,20 @@ export interface UnoBoardProps {
   onLeave: () => void;
   /** Buttons for the winner dialog (rematch, back to lobby, or a waiting note). */
   winnerActions: ReactNode;
+  /**
+   * Shared-device games (pass-and-play) have no single viewer, so UNO is pressed by whoever is
+   * quickest: one button for the player on one card, one for everybody else.
+   */
+  sharedUno?: { call: () => Promise<string | null>; catchIt: () => Promise<string | null> };
   /** Bumps whenever the local UI should forget half-finished input (a new game started). */
   resetKey?: number;
 }
 
 /** The table, the players and the hand. Knows nothing about where the game state comes from. */
-export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, send, handArea, onLeave, winnerActions, resetKey = 0 }: UnoBoardProps) {
-  const [armUno, setArmUno] = useState(false);
+export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, send, handArea, onLeave, winnerActions, sharedUno, resetKey = 0 }: UnoBoardProps) {
   const [notice, setNotice] = useState('');
   const [pending, setPending] = useState<Card | null>(null);
-  useEffect(() => { setArmUno(false); setNotice(''); setPending(null); }, [resetKey]);
+  useEffect(() => { setNotice(''); setPending(null); }, [resetKey]);
 
   const sound = usePrefs((p) => p.sound);
   const myTurn = viewerId !== null && pub.current === viewerId && !pub.winner;
@@ -87,12 +117,12 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
   const go = async (a: UnoAction) => {
     const problem = await send(a);
     setNotice(problem ?? '');
-    if (!problem) { setPending(null); if (a.type === 'play') setArmUno(false); }
+    if (!problem) { setPending(null);  }
   };
   const playCard = (card: Card) => {
     if (!playable.has(card.id)) return setNotice('That card cannot be played right now.');
     if (card.color === 'wild' || (card.value === 7 && pub.config.sevenZero)) return setPending(card);
-    void go({ type: 'play', cardId: card.id, callUno: armUno });
+    void go({ type: 'play', cardId: card.id });
   };
 
   const cur = pub.current;
@@ -110,7 +140,7 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
         <div className="flex items-center gap-1.5 text-sm font-semibold text-paper-dim">
           <span className="pill"><Dir size={15} aria-hidden="true" />{pub.direction === 1 ? 'Clockwise' : 'Counter-clockwise'}</span>
           {secondsLeft !== null && <span className={`pill ${secondsLeft <= 5 ? '!text-card-red' : ''}`}><Timer size={15} aria-hidden="true" />{secondsLeft}s</span>}
-          <Button variant="ghost" onClick={onLeave} className="!min-h-[44px]">Leave</Button>
+          <Button variant="danger" onClick={onLeave} className="!min-h-[44px]" aria-label="Leave the game"><LogOut size={16} aria-hidden="true" />Leave</Button>
         </div>
       </header>
 
@@ -155,21 +185,19 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
       </div>
       {notice && <p role="alert" className="hint">{notice}</p>}
 
+      {pub.unoVulnerable && !pub.winner && (
+        <UnoRace
+          target={pub.unoVulnerable} targetName={nameOf(pub.unoVulnerable)} viewerId={viewerId}
+          shared={sharedUno}
+          onPress={async (a) => { const problem = await send(a); setNotice(problem ?? ''); }}
+          onShared={async (fn) => { const problem = await fn(); setNotice(problem ?? ''); }}
+        />
+      )}
+
       {handArea ?? (priv && viewerId ? (
         <section aria-label="Your hand" className="sticky bottom-0 z-20 -mx-4 bg-gradient-to-t from-ink-900 via-ink-900/95 to-transparent px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-6 sm:static sm:mx-0 sm:bg-none sm:p-0">
           <div className="mb-1 flex flex-wrap items-center gap-2">
             {priv.canPass && <Button variant="secondary" onClick={() => void go({ type: 'pass' })}>Pass and keep the card</Button>}
-            {priv.hand.length === 1 && pub.unoVulnerable === viewerId && <Button className="btn-lg" onClick={() => void go({ type: 'call-uno' })}>UNO!</Button>}
-            {priv.hand.length === 2 && priv.yourTurn && (
-              <Button variant={armUno ? 'primary' : 'secondary'} aria-pressed={armUno} onClick={() => setArmUno((v) => !v)}>
-                {armUno ? 'UNO is set for your next card' : 'Call UNO with your next card'}
-              </Button>
-            )}
-            {pub.unoVulnerable && pub.unoVulnerable !== viewerId && (
-              <Button variant="secondary" onClick={() => void go({ type: 'catch-uno', target: pub.unoVulnerable as PlayerId })}>
-                Catch {nameOf(pub.unoVulnerable)} (no UNO)
-              </Button>
-            )}
           </div>
           <ul className="-mx-4 flex overflow-x-auto px-6 pb-4 pt-5 [scrollbar-width:none] sm:mx-0 sm:justify-center sm:px-2">
             {hand.map((card, i) => (
@@ -185,7 +213,7 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
         <Modal title="Choose a colour" onClose={() => setPending(null)}>
           <div className="mt-5 grid grid-cols-2 gap-3">
             {COLORS.map((c: Color, i) => (
-              <button key={c} type="button" autoFocus={i === 0} onClick={() => void go({ type: 'play', cardId: pending.id, color: c, callUno: armUno })}
+              <button key={c} type="button" autoFocus={i === 0} onClick={() => void go({ type: 'play', cardId: pending.id, color: c })}
                 className={`btn !min-h-[72px] !rounded-[20px] text-xl ${SWATCH[c]}`} style={{ '--lip': '0 0 0' } as React.CSSProperties}>{c[0]?.toUpperCase()}{c.slice(1)}</button>
             ))}
           </div>
@@ -197,7 +225,7 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
           <div className="mt-5 space-y-2">
             {pub.players.filter((p) => p.id !== viewerId).map((p, i) => (
               <Button key={p.id} variant="secondary" autoFocus={i === 0} className="w-full justify-between"
-                onClick={() => void go({ type: 'play', cardId: pending.id, swapWith: p.id, callUno: armUno })}>
+                onClick={() => void go({ type: 'play', cardId: pending.id, swapWith: p.id })}>
                 <span>{nameOf(p.id)}</span><span className="text-paper-dim">{p.cards} cards</span>
               </Button>
             ))}

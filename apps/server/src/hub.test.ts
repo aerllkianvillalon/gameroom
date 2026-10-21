@@ -195,7 +195,7 @@ describe('UNO online: server authority and hidden hands', () => {
     const before = l.conns.map((c) => c.game.length);
     const v = priv(cur);
     const action = v.playableCardIds.length
-      ? { type: 'play' as const, cardId: v.playableCardIds[0], color: 'red' as const, callUno: true }
+      ? { type: 'play' as const, cardId: v.playableCardIds[0], color: 'red' as const }
       : { type: 'draw' as const };
     okAck(send(w, cur, { type: 'action', action }));
     l.conns.forEach((c, i) => expect(c.game.length).toBeGreaterThan(before[i]!));
@@ -210,7 +210,7 @@ describe('UNO online: server authority and hidden hands', () => {
       const v = priv(me);
       if (v.yourTurn) {
         const action = v.canPass ? { type: 'pass' as const }
-          : v.playableCardIds.length ? { type: 'play' as const, cardId: v.playableCardIds[0], color: 'blue' as const, callUno: true }
+          : v.playableCardIds.length ? { type: 'play' as const, cardId: v.playableCardIds[0], color: 'blue' as const }
           : { type: 'draw' as const };
         okAck(send(w, me, { type: 'action', action }));
       } else w.advance(1000);

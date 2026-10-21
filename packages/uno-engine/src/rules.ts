@@ -168,10 +168,10 @@ export function step(state: UnoState, pid: PlayerId, a: UnoAction, rng: Rng): Re
     ev({ type: 'won', player: pid });
     return ok(s);
   }
-  if (hand.length === 1) {
-    if (a.callUno) ev({ type: 'uno', by: pid });
-    else s.unoPending = pid;
-  }
+  // UNO is never automatic: reaching one card opens a window where the player and
+  // everyone else race to press UNO. First press wins (safe for the owner, penalty
+  // if someone else is faster).
+  if (hand.length === 1) s.unoPending = pid;
 
   const drawEffect = (count: number) => {
     if (s.config.stackDraws) {

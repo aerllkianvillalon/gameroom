@@ -112,7 +112,7 @@ function OnlineLobby() {
           {isHost
             ? <Button className="btn-lg" disabled={problem !== null} onClick={start} aria-describedby={problem ? 'start-reason' : undefined}>Start game</Button>
             : <Button className="btn-lg" variant={me?.ready ? 'secondary' : 'primary'} aria-pressed={Boolean(me?.ready)} onClick={() => void run(client.setReady(!me?.ready))}>{me?.ready ? 'Not ready' : 'I am ready'}</Button>}
-          <Button variant="ghost" onClick={leave}>Leave room</Button>
+          <Button variant="ghost" className="btn-lg" onClick={leave}>Leave room</Button>
         </div>
         {isHost && problem && <p id="start-reason" className="mt-3 max-w-md text-paper-dim">{problem}</p>}
         {!isHost && <p className="mt-3 text-paper-dim">Waiting for the host to start.</p>}

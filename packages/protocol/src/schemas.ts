@@ -5,7 +5,7 @@ const id = z.string().min(1).max(40);
 const color = z.enum(['red', 'yellow', 'green', 'blue']);
 
 export const UnoActionSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('play'), cardId: z.number().int().min(0).max(1000), color: color.optional(), swapWith: id.optional(), callUno: z.boolean().optional() }),
+  z.object({ type: z.literal('play'), cardId: z.number().int().min(0).max(1000), color: color.optional(), swapWith: id.optional() }),
   z.object({ type: z.literal('draw') }),
   z.object({ type: z.literal('pass') }),
   z.object({ type: z.literal('call-uno') }),

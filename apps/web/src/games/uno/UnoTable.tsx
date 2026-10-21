@@ -49,6 +49,20 @@ function LocalTable({ session, code }: { session: UnoSession; code: string }) {
     const r = session.act(viewerId, a);
     return r.ok ? null : r.message;
   };
+  const pendingId = pub.unoVulnerable;
+  const sharedUno = multi && pendingId ? {
+    call: async () => {
+      if (!session.isHuman(pendingId)) return null; // bots call for themselves
+      const r = session.act(pendingId, { type: 'call-uno' });
+      return r.ok ? null : r.message;
+    },
+    catchIt: async () => {
+      const catcher = session.humans.find((h) => h !== pendingId);
+      if (!catcher) return null;
+      const r = session.act(catcher, { type: 'catch-uno', target: pendingId });
+      return r.ok ? null : r.message;
+    },
+  } : undefined;
   const leave = () => {
     setActiveSession(null);
     offlineAdapter.returnToLobby();
@@ -67,7 +81,7 @@ function LocalTable({ session, code }: { session: UnoSession; code: string }) {
   return (
     <UnoBoard
       pub={pub} priv={priv} viewerId={viewerId} nameOf={session.nameOf} avatarOf={session.avatarOf}
-      secondsLeft={secondsLeft} send={send} handArea={handArea} onLeave={leave} resetKey={game}
+      secondsLeft={secondsLeft} send={send} handArea={handArea} onLeave={leave} sharedUno={sharedUno} resetKey={game}
       winnerActions={<><Button autoFocus onClick={rematch}>Rematch</Button><Button variant="secondary" onClick={leave}>Back to lobby</Button></>}
     />
   );

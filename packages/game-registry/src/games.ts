@@ -56,7 +56,7 @@ export const GAMES: readonly GameMeta[] = [
       { key: 'impostorKnows', label: 'What the impostor gets', type: 'select', default: 'nothing', options: [
         { value: 'nothing', label: 'No word' }, { value: 'hint', label: 'A vague hint' }, { value: 'different', label: 'A different word' },
       ] },
-      { key: 'clueRounds', label: 'Clue rounds', type: 'number', default: 2, min: 1, max: 4 },
+      { key: 'clueRounds', label: 'Clue rounds', type: 'number', default: 2, min: 1, max: 8 },
       { key: 'discussionSeconds', label: 'Discussion timer', type: 'number', default: 90, min: 30, max: 300, step: 30, unit: 'seconds' },
       { key: 'tieBreak', label: 'Tie-breaking vote', type: 'toggle', default: true },
       { key: 'finalGuess', label: 'Impostor can guess the word if caught', type: 'toggle', default: true },

@@ -1,6 +1,6 @@
 import { fail, ok, createRng, randomSeed, type PlayerId, type Result, type Rng, type Room } from '@party/game-engine';
 import {
-  botLevelFromSettings, chooseBotAction, configFromSettings, currentPlayer, step, unoEngine, withClock,
+  botLevelFromSettings, chooseBotAction, chooseBotUnoReaction, configFromSettings, currentPlayer, step, unoEngine, withClock,
   type BotLevel, type UnoAction, type UnoConfig, type UnoState,
 } from '@party/uno-engine';
 
@@ -10,6 +10,11 @@ const timeoutScheduler: Scheduler = (fn, ms) => {
   const t = setTimeout(fn, ms);
   return () => clearTimeout(t);
 };
+
+/** How long a bot's move is held back while a UNO window is open, and how fast bots may react inside it. */
+export const UNO_WINDOW_MS = 1800;
+const UNO_REACT_MIN_MS = 500;
+const UNO_REACT_MAX_MS = 1600;
 
 export const configFromRoom = (room: Room): UnoConfig => configFromSettings(room.settings);
 export const botLevelFromRoom = (room: Room): BotLevel => botLevelFromSettings(room.settings);
@@ -35,6 +40,7 @@ export class UnoSession {
   private listeners = new Set<() => void>();
   private cancelBot: Cancel | null = null;
   private cancelClock: Cancel | null = null;
+  private cancelUno: Cancel[] = [];
   private disposed = false;
 
   constructor(readonly room: Room, opts: SessionOptions = {}) {
@@ -75,6 +81,7 @@ export class UnoSession {
     this.disposed = true;
     this.cancelBot?.();
     this.cancelClock?.();
+    this.clearUno();
     this.listeners.clear();
   }
 
@@ -90,10 +97,35 @@ export class UnoSession {
     this.cancelBot?.();
     this.cancelClock?.();
     this.cancelBot = this.cancelClock = null;
+    this.clearUno();
     if (this.disposed || this.state.winner) return;
-    if (this.bots.has(currentPlayer(this.state))) this.cancelBot = this.schedule(() => this.botMove(), this.botDelay);
+    // While a UNO window is open, a bot's move waits so people get a fair race to press UNO.
+    const unoOpen = this.state.unoPending !== null;
+    if (this.bots.has(currentPlayer(this.state))) this.cancelBot = this.schedule(() => this.botMove(), this.botDelay + (unoOpen ? UNO_WINDOW_MS : 0));
+    if (unoOpen) this.planUnoReactions();
     const deadline = this.state.turnDeadline;
     if (deadline !== null) this.cancelClock = this.schedule(() => this.timeout(), Math.max(0, deadline - this.now()));
+  }
+
+  private clearUno() {
+    this.cancelUno.forEach((c) => c());
+    this.cancelUno = [];
+  }
+
+  /** Each bot may press UNO after its own random reaction time, so it is a real race with the humans. */
+  private planUnoReactions() {
+    for (const bot of this.bots) {
+      const wait = UNO_REACT_MIN_MS + this.rng.next() * (UNO_REACT_MAX_MS - UNO_REACT_MIN_MS);
+      this.cancelUno.push(this.schedule(() => this.botUno(bot), wait));
+    }
+  }
+
+  private botUno(bot: PlayerId) {
+    if (this.disposed) return;
+    const action = chooseBotUnoReaction(this.state, bot, this.level, this.rng);
+    if (!action) return;
+    const r = step(this.state, bot, action, this.rng);
+    if (r.ok) this.commit(r.value);
   }
 
   private botMove() {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createRng, type PlayerRef } from '@party/game-engine';
 import {
-  buildDeck, chooseBotAction, currentPlayer, legalActions, makeConfig, step, unoEngine, withClock,
+  buildDeck, chooseBotAction, chooseBotUnoReaction, currentPlayer, legalActions, makeConfig, step, unoEngine, withClock,
   type BotLevel, type Card, type Color, type UnoAction, type UnoConfig, type UnoState,
 } from './index';
 
@@ -156,8 +156,10 @@ describe('UNO call', () => {
     const s = go(mk({ a: [c(1, 'red', 1), c(2, 'red', 2)], b: x() }, { config: { unoPenalty: 4 } }), 'a', play(1));
     expect(go(s, 'b', { type: 'catch-uno', target: 'a' }).hands.a).toHaveLength(5);
   });
-  it('calling UNO in time (with the play, or right after) protects the player', () => {
-    expect(go(base(), 'a', play(1, { callUno: true })).unoPending).toBe(null);
+  it('UNO is never automatic: reaching one card always opens the window', () => {
+    expect(go(base(), 'a', play(1)).unoPending).toBe('a');
+  });
+  it('calling UNO right after the play protects the player', () => {
     const late = go(go(base(), 'a', play(1)), 'a', { type: 'call-uno' });
     expect(late.unoPending).toBe(null);
     expect(code(base(), 'a', { type: 'call-uno' })).toBe('nothing_to_call');
@@ -260,5 +262,17 @@ describe('full games with bots (fuzz)', () => {
       if (!s.winner) throw new Error(`seed ${seed} did not finish in ${steps} steps`);
       expect(s.hands[s.winner]).toHaveLength(0);
     }
+  });
+});
+
+describe('bot UNO reactions', () => {
+  it('bots never call automatically with the play, and only react while a window is open', () => {
+    const s0 = mk({ a: [c(1, 'red', 1), c(2, 'red', 2)], b: [c(3, 'blue', 3), c(4, 'blue', 4)], c: x() });
+    const s = go(s0, 'a', play(1));
+    expect(s.unoPending).toBe('a');
+    expect(chooseBotUnoReaction(s0, 'b', 'hard', rng)).toBe(null);
+    const reactions = Array.from({ length: 40 }, () => chooseBotUnoReaction(s, 'b', 'hard', rng));
+    expect(reactions.some((r) => r?.type === 'catch-uno')).toBe(true);
+    expect(chooseBotUnoReaction(s, 'a', 'hard', rng)?.type ?? 'call-uno').toBe('call-uno');
   });
 });

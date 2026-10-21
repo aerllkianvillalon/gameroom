@@ -11,12 +11,11 @@ const handCount = (s: UnoState, id: PlayerId) => (s.hands[id] as Card[]).length;
 export function chooseBotAction(s: UnoState, pid: PlayerId, level: BotLevel, rng: Rng): UnoAction {
   const legal = legalActions(s, pid);
   const plays = legal.filter((a): a is Play => a.type === 'play');
-  const callUno = level === 'easy' ? rng.next() < 0.7 : true;
 
   if (plays.length === 0) {
     return legal.find((a) => a.type === 'draw') ?? legal.find((a) => a.type === 'pass') ?? { type: 'draw' };
   }
-  if (level === 'easy') return { ...rng.pick(plays), callUno };
+  if (level === 'easy') return rng.pick(plays);
 
   const hand = s.hands[pid] as Card[];
   const nextId = s.order[(s.current + s.direction + s.order.length) % s.order.length] as PlayerId;
@@ -40,5 +39,22 @@ export function chooseBotAction(s: UnoState, pid: PlayerId, level: BotLevel, rng
     return v;
   };
   const best = plays.reduce((b, p) => (score(p) > score(b) ? p : b));
-  return { ...best, callUno };
+  return best;
+}
+
+/** Chance a bot remembers to call its own UNO, and to catch a human who forgot. */
+export const BOT_UNO_SKILL: Record<BotLevel, { self: number; catch: number }> = {
+  easy: { self: 0.5, catch: 0.2 }, medium: { self: 0.8, catch: 0.5 }, hard: { self: 0.95, catch: 0.8 },
+};
+
+/**
+ * What a bot does about an open UNO window, or null if it lets it pass. The caller
+ * runs this after a random short delay so humans get a fair race.
+ */
+export function chooseBotUnoReaction(s: UnoState, bot: PlayerId, level: BotLevel, rng: Rng): UnoAction | null {
+  const target = s.unoPending;
+  if (!target || s.winner) return null;
+  const skill = BOT_UNO_SKILL[level];
+  if (target === bot) return rng.next() < skill.self ? { type: 'call-uno' } : null;
+  return rng.next() < skill.catch ? { type: 'catch-uno', target } : null;
 }

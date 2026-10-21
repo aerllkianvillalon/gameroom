@@ -12,7 +12,7 @@ const cols = [
 /** On phones the tab bar covers the bottom edge, so the footer keeps to the essentials and the rest lives in "More". */
 export function Footer() {
   return (
-    <footer className="mt-4 bg-ink-950/70" style={{ boxShadow: '0 -1px 0 rgb(var(--line) / .45)' }}>
+    <footer className="mt-4 bg-ink-950/70 pb-[calc(8rem+env(safe-area-inset-bottom))] lg:pb-0" style={{ boxShadow: '0 -1px 0 rgb(var(--line) / .45)' }}>
       <div className="mx-auto hidden max-w-6xl grid-cols-[1.4fr_repeat(3,1fr)] gap-x-8 px-10 py-12 lg:grid">
         <div>
           <Wordmark />
@@ -29,8 +29,10 @@ export function Footer() {
           </nav>
         ))}
       </div>
-      <div className="mx-auto max-w-6xl px-4 py-5 text-xs leading-relaxed text-paper-dim sm:px-6 sm:text-sm lg:px-10" style={{ boxShadow: '0 -1px 0 rgb(var(--line) / .35)' }}>
-        <p>Your name and settings stay on this device. © {new Date().getFullYear()} {LEGAL.operator}. Game names may be trademarks of their owners. GameRoom is not affiliated with them.</p>
+      <div style={{ boxShadow: '0 -1px 0 rgb(var(--line) / .35)' }}>
+        <div className="mx-auto max-w-6xl px-4 py-5 text-xs leading-relaxed text-paper-dim sm:px-6 sm:text-sm lg:px-10">
+          <p>Your name and settings stay on this device. © {new Date().getFullYear()} {LEGAL.operator}. Game names may be trademarks of their owners. GameRoom is not affiliated with them.</p>
+        </div>
       </div>
     </footer>
   );

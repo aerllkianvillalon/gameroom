@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { isValidRoomCode, MAX_NAME_LENGTH, normalizeRoomCode, validateName } from '@party/game-engine';
 import { Button } from '../ui/Button';
 import { usePrefs } from '../store/prefs';
 import { getOnlineClient } from '../transport/online-instance';
 import { useOnline } from '../hooks/useOnlineClient';
-import { getRecentRooms } from '../storage/recent';
+import { clearRecentRooms, getRecentRooms, removeRecentRoom } from '../storage/recent';
 import { getGame } from '@party/game-registry';
 
 export function JoinRoom() {
@@ -19,7 +20,10 @@ export function JoinRoom() {
   const [needsPassword, setNeedsPassword] = useState(false);
   const [errors, setErrors] = useState<{ code?: string; name?: string; form?: string }>({});
   const [busy, setBusy] = useState(false);
-  const [recent] = useState(() => getRecentRooms());
+  const [recent, setRecent] = useState(() => getRecentRooms());
+
+  const forget = (c: string) => { removeRecentRoom(c); setRecent(getRecentRooms()); };
+  const forgetAll = () => { clearRecentRooms(); setRecent([]); };
 
   const submit = async () => {
     const c = normalizeRoomCode(code);
@@ -47,13 +51,19 @@ export function JoinRoom() {
       {online.session && <p role="status" className="hint mt-4">You are already in room {online.session.code}. Leave it first to join another.</p>}
       {recent.length > 0 && !online.session && (
         <div className="mt-6">
-          <h2 className="section-title mb-2 !text-lg">Recent rooms</h2>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <h2 className="section-title !text-lg">Recent rooms</h2>
+            <button type="button" onClick={forgetAll} className="min-h-[44px] rounded-lg px-2 text-sm text-paper-dim underline-offset-4 hover:text-paper hover:underline">Clear all</button>
+          </div>
           <div className="flex flex-wrap gap-2">
             {recent.map((r) => (
-              <button key={r.code} type="button" onClick={() => setCode(r.code)} className="chip !bg-ink-800/80 !text-paper">
-                <span className="font-display font-extrabold tracking-[0.18em] text-paper">{r.code}</span>
-                <span className="ml-2 text-sm text-paper-dim">{getGame(r.gameId)?.title ?? r.gameId}</span>
-              </button>
+              <span key={r.code} className="chip !bg-ink-800/80 !pr-1 !text-paper">
+                <button type="button" onClick={() => setCode(r.code)} className="inline-flex min-h-[44px] items-center">
+                  <span className="font-display font-extrabold tracking-[0.18em] text-paper">{r.code}</span>
+                  <span className="ml-2 text-sm text-paper-dim">{getGame(r.gameId)?.title ?? r.gameId}</span>
+                </button>
+                <button type="button" aria-label={`Remove recent room ${r.code}`} onClick={() => forget(r.code)} className="ml-1 inline-flex h-9 w-9 items-center justify-center rounded-full text-paper-dim hover:bg-ink-700 hover:text-paper"><X size={16} aria-hidden="true" /></button>
+              </span>
             ))}
           </div>
           <p className="mt-2 text-sm text-paper-dim">Rooms close when they empty, so an old one may no longer exist.</p>

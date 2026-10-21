@@ -93,7 +93,7 @@ export function Layout() {
         </div>
       )}
 
-      <main id="main" className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10 ${inGame ? '' : 'has-tabbar'}`}><div key={pathname} className="fade-in"><Outlet /></div></main>
+      <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10"><div key={pathname} className="fade-in"><Outlet /></div></main>
       {!inGame && <Footer />}
       {!inGame && <TabBar onMore={() => setOpen(true)} moreOpen={open} />}
       <MoreSheet open={open} onClose={close} />

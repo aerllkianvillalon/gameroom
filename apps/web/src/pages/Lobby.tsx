@@ -92,7 +92,7 @@ export function Lobby() {
         {error && <p role="alert" className="mt-3 text-card-red">{error}</p>}
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button className="btn-lg" disabled={!canPlay} onClick={start} aria-describedby={startReason ? 'start-reason' : undefined}>Start game</Button>
-          <Button variant="ghost" onClick={() => { offlineAdapter.leave(); nav('/games'); }}>Close room</Button>
+          <Button variant="ghost" className="btn-lg" onClick={() => { offlineAdapter.leave(); nav('/games'); }}>Close room</Button>
         </div>
         {startReason && <p id="start-reason" className="mt-3 max-w-md text-paper-dim">{startReason}</p>}
       </section>

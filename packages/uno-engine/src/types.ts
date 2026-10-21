@@ -28,7 +28,7 @@ export const DEFAULT_CONFIG: UnoConfig = {
 export const makeConfig = (partial: Partial<UnoConfig> = {}): UnoConfig => ({ ...DEFAULT_CONFIG, ...partial });
 
 export type UnoAction =
-  | { type: 'play'; cardId: number; color?: Color; swapWith?: PlayerId; callUno?: boolean }
+  | { type: 'play'; cardId: number; color?: Color; swapWith?: PlayerId }
   | { type: 'draw' }
   | { type: 'pass' }
   | { type: 'call-uno' }

@@ -36,3 +36,12 @@ export function addRecentRoom(room: { code: string; gameId: string }, now = Date
   const next = [{ ...room, at: now }, ...getRecentRooms(now).filter((r) => r.code !== room.code)].slice(0, MAX_ROOMS);
   try { localStorage.setItem(ROOMS_KEY, JSON.stringify(next)); } catch { /* storage unavailable: no shortcuts */ }
 }
+
+export function removeRecentRoom(code: string, now = Date.now()) {
+  const next = getRecentRooms(now).filter((r) => r.code !== code);
+  try { localStorage.setItem(ROOMS_KEY, JSON.stringify(next)); } catch { /* storage unavailable: nothing to remove */ }
+}
+
+export function clearRecentRooms() {
+  try { localStorage.removeItem(ROOMS_KEY); } catch { /* storage unavailable: nothing to clear */ }
+}
