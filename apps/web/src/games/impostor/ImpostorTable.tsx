@@ -171,7 +171,7 @@ function Table({ session, code }: { session: ImpostorSession; code: string }) {
         <h1 className="font-display text-[1.625rem] font-extrabold leading-none tracking-[-0.03em]">ImpostorWho</h1>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="ghost" onClick={() => setHelp(true)}><HelpCircle size={18} aria-hidden="true" />How to play</Button>
-          <Button variant="danger" onClick={leave}>Leave game</Button>
+          <Button variant="ghost" onClick={leave}>Leave game</Button>
         </div>
       </header>
       {notice && <p role="alert" className="text-card-yellow">{notice}</p>}

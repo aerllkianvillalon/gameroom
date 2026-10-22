@@ -11,3 +11,13 @@ Typecheck clean, 160 tests passing.
 ## Follow-up
 - New red `danger` Button variant, used for every Leave / Close room button (UNO board, Lobby, OnlineRoom, both Impostor screens).
 - Mobile tab bar is `position: fixed` again; the Footer now has bottom padding (8rem + safe area, mobile only) so its text is never hidden behind the bar.
+
+## New games (online only)
+- Trivia Battle, Word Bomb and Werewolf are playable online. Registry entries, protocol schemas, engines, server hosts, hub wiring and web tables added; CreateRoom and GameDetails now hide "this device" for online-only games.
+- `apps/server/src/hosts/timed.ts`: shared deadline-driven host (timer, optional absent-player autoplay, push on change).
+- Tests: three engine suites, three hub integration tests; the old hub test that used `trivia` as an unavailable game now uses `memory`.
+
+## Would You Rather and Memory Match (online only)
+- Both are playable online. Engines, registry entries, protocol schemas, server hosts (on the shared `timed.ts`), hub wiring, web tables and card art added.
+- Memory Match never sends face-down symbols to clients. Would You Rather hides votes until the reveal.
+- The registry test and the old hub test now use `drawing` as the example of a game that is not available yet.

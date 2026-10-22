@@ -9,12 +9,13 @@ describe('game registry', () => {
   });
   it('lists both priority games first and never marks unfinished games playable', () => {
     expect(games.slice(0, 2).map((g) => g.id)).toEqual(['uno', 'impostor']);
-    expect(games.filter((g) => g.status === 'playable').map((g) => g.id)).toEqual(['uno', 'impostor']); // update when another game ships
+    expect(games.filter((g) => g.status === 'playable').map((g) => g.id)).toEqual(['uno', 'impostor', 'trivia', 'wordbomb', 'werewolf', 'wyr', 'memory']); // update when another game ships
     for (const id of ['uno', 'impostor']) expect(getGame(id)!.modes).toContain('online');
     expect(getGame('uno')!.modes).not.toContain('lan'); // LAN is not built
   });
   it('coming-soon games cannot create rooms', () => {
-    expect(canCreateRoom(getGame('trivia')!)).toBe(false);
+    expect(canCreateRoom(getGame('drawing')!)).toBe(false);
+    expect(canCreateRoom(getGame('trivia')!)).toBe(true);
     expect(canCreateRoom(getGame('uno')!)).toBe(true);
   });
   it('every setting default is inside its own bounds and options', () => {

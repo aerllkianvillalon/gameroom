@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Users, Wifi } from 'lucide-react';
 import { MODE_LABELS, type GameMeta } from '@party/game-registry';
 import { GameArt } from './GameArt';
 import { GameIcon, StatusBadge, playersLabel } from './GameBits';
@@ -9,13 +9,17 @@ export type Fit = 'neutral' | 'fit' | 'nofit';
 
 /** Large, tappable card for a game you can play now. The whole card is one link to the game's page. */
 export function GameCard({ game: g, fit = 'neutral', as: Heading = 'h3' }: { game: GameMeta; fit?: Fit; as?: 'h2' | 'h3' }) {
+  const onlineOnly = g.modes.length === 1 && g.modes[0] === 'online';
   return (
     <Link to={`/games/${g.id}`} data-fit={fit} className="game-card group block h-full overflow-hidden bg-ink-800">
-      <GameArt id={g.id} accent={g.accent} className="game-art h-44 sm:h-52" />
-      <div className="p-5">
+      <div className="art-frame">
+        <GameArt id={g.id} accent={g.accent} className="game-art h-44 sm:h-52" />
+        {onlineOnly && <span className="absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-ink-950/80 px-3 py-1 text-xs font-bold text-paper backdrop-blur"><Wifi size={14} strokeWidth={3} aria-hidden="true" />Online only</span>}
+      </div>
+      <div className="p-5 pt-3">
         <Heading className="font-display text-[1.75rem] font-extrabold leading-none tracking-[-0.03em]">{g.title}</Heading>
         <p className="mt-2 text-paper-dim">{g.tagline}</p>
-        <p className="mt-4 font-semibold">{playersLabel(g.minPlayers, g.maxPlayers)}</p>
+        <p className="mt-4 flex items-center gap-2 font-semibold"><Users size={18} strokeWidth={2.5} aria-hidden="true" className="text-paper-dim" />{playersLabel(g.minPlayers, g.maxPlayers)}</p>
         <ul className="mt-2 flex flex-wrap gap-2" aria-label="Ways to play">
           {g.modes.filter((m) => m !== 'lan').map((m) => <li key={m} className="pill">{MODE_LABELS[m]}</li>)}
         </ul>

@@ -11,6 +11,11 @@ import { DEFAULT_TIMING, type Cancel, type GameHost, type HostCtx, type Schedule
 import { TokenBucket } from './ratelimit';
 import { sanitizeSettings } from './settings';
 import { UnoHost } from './hosts/uno';
+import { TriviaHost } from './hosts/trivia';
+import { WordBombHost } from './hosts/wordbomb';
+import { WerewolfHost } from './hosts/werewolf';
+import { WyrHost } from './hosts/wyr';
+import { MemoryHost } from './hosts/memory';
 
 /** One connected client. The socket layer implements this; tests use a fake. */
 export interface Conn {
@@ -38,7 +43,7 @@ interface ServerRoom {
   hostTimer: Cancel | null;
 }
 
-const ONLINE_GAMES: readonly GameId[] = ['uno', 'impostor'];
+const ONLINE_GAMES: readonly GameId[] = ['uno', 'impostor', 'trivia', 'wordbomb', 'werewolf', 'wyr', 'memory'];
 const BOTS_ONLINE: readonly GameId[] = ['uno'];
 const err = (code: string, message: string): Ack => ({ ok: false, code, message });
 const good = (data?: unknown): Ack => ({ ok: true, data });
@@ -280,7 +285,15 @@ export class Hub {
       notify: () => this.pushGame(sr),
       recentWords: sr.recentWords, rememberWords: (w) => { sr.recentWords = w; }, pack: customPack,
     };
-    sr.game = room.gameId === 'impostor' ? new ImpostorHost(ctx) : new UnoHost(ctx);
+    switch (room.gameId) {
+      case 'impostor': sr.game = new ImpostorHost(ctx); break;
+      case 'trivia': sr.game = new TriviaHost(ctx); break;
+      case 'wordbomb': sr.game = new WordBombHost(ctx); break;
+      case 'werewolf': sr.game = new WerewolfHost(ctx); break;
+      case 'wyr': sr.game = new WyrHost(ctx); break;
+      case 'memory': sr.game = new MemoryHost(ctx); break;
+      default: sr.game = new UnoHost(ctx);
+    }
     this.pushRoom(sr);
     this.pushGame(sr);
     return good();

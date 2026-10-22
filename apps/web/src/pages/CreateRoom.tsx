@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { canCreateRoom, defaultSettings, getGame, listGames } from '@party/game-registry';
 import { MAX_NAME_LENGTH, type SettingValue } from '@party/game-engine';
+import type { GameId } from '@party/protocol/types';
 import { Button } from '../ui/Button';
 import { SettingsForm } from '../components/SettingsForm';
 import { offlineAdapter } from '../transport/offline-adapter';
@@ -28,7 +29,8 @@ export function CreateRoom() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const canOnline = Boolean(game?.modes.includes('online'));
-  const mode = where === 'online' && canOnline ? 'online' : 'local';
+  const canLocal = !game || game.modes.some((m) => m === 'pass-and-play' || m === 'bots');
+  const mode = (where === 'online' && canOnline) || !canLocal ? 'online' : 'local';
 
   const pick = (id: string) => {
     const g = getGame(id);
@@ -46,7 +48,7 @@ export function CreateRoom() {
       return nav(`/lobby/${r.value.code}`);
     }
     setBusy(true);
-    const ack = await getOnlineClient().create({ game: game.id as 'uno' | 'impostor', name, avatar: prefs.avatar, settings, password: password || undefined });
+    const ack = await getOnlineClient().create({ game: game.id as GameId, name, avatar: prefs.avatar, settings, password: password || undefined });
     setBusy(false);
     if (!ack.ok) return setError(ack.message);
     prefs.update({ playerName: name.trim() });
@@ -71,8 +73,8 @@ export function CreateRoom() {
       <fieldset className="mt-8">
         <legend className="section-title mb-3">Where you play</legend>
         <label className="choice">
-          <input type="radio" name="where" checked={mode === 'local'} onChange={() => setWhere('local')} />
-          <span><span className="font-semibold">This device</span><span className="block text-sm text-paper-dim">Pass and play{game?.modes.includes('bots') ? ', plus bots' : ''}. Works without internet.</span></span>
+          <input type="radio" name="where" disabled={!canLocal} checked={mode === 'local'} onChange={() => setWhere('local')} />
+          <span><span className="font-semibold">This device</span><span className="block text-sm text-paper-dim">{canLocal ? `Pass and play${game?.modes.includes('bots') ? ', plus bots' : ''}. Works without internet.` : 'Not available for this game. Everyone plays on their own device.'}</span></span>
         </label>
         <label className="choice mt-2">
           <input type="radio" name="where" disabled={!canOnline} checked={mode === 'online'} onChange={() => setWhere('online')} />

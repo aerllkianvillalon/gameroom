@@ -140,7 +140,7 @@ export function UnoBoard({ pub, priv, viewerId, nameOf, avatarOf, secondsLeft, s
         <div className="flex items-center gap-1.5 text-sm font-semibold text-paper-dim">
           <span className="pill"><Dir size={15} aria-hidden="true" />{pub.direction === 1 ? 'Clockwise' : 'Counter-clockwise'}</span>
           {secondsLeft !== null && <span className={`pill ${secondsLeft <= 5 ? '!text-card-red' : ''}`}><Timer size={15} aria-hidden="true" />{secondsLeft}s</span>}
-          <Button variant="danger" onClick={onLeave} className="!min-h-[44px]" aria-label="Leave the game"><LogOut size={16} aria-hidden="true" />Leave</Button>
+          <Button variant="ghost" onClick={onLeave} className="!min-h-[44px]" aria-label="Leave the game"><LogOut size={16} aria-hidden="true" />Leave</Button>
         </div>
       </header>
 

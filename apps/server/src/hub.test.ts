@@ -54,7 +54,7 @@ const okAck = (a: Ack) => { if (!a.ok) throw new Error(`${a.code}: ${a.message}`
 const codeOf = (a: Ack) => (a.ok ? 'ok' : a.code);
 
 /** n humans in a room; everyone ready. */
-function lobby(w: W, game: 'uno' | 'impostor', n: number, settings = {}) {
+function lobby(w: W, game: Extract<ClientMessage, { type: 'create' }>['game'], n: number, settings = {}) {
   const conns = [w.conn()];
   const host = joined(send(w, conns[0]!, { type: 'create', game, name: 'P0', avatar: 'cat', settings }));
   const members = [host];
@@ -86,7 +86,7 @@ describe('creating and joining', () => {
   it('validates games, names and double-creating', () => {
     const w = world();
     const c = w.conn();
-    expect(codeOf(send(w, c, { type: 'create', game: 'trivia' as 'uno', name: 'A', avatar: 'cat' }))).toBe('bad_game');
+    expect(codeOf(send(w, c, { type: 'create', game: 'drawing' as 'uno', name: 'A', avatar: 'cat' }))).toBe('bad_game');
     expect(codeOf(send(w, c, { type: 'create', game: 'uno', name: ' <> ', avatar: 'cat' }))).toBe('name_empty');
     expect(codeOf(send(w, c, { type: 'create', game: 'uno', name: 'A', avatar: 'cat' }))).toBe('ok');
     expect(codeOf(send(w, c, { type: 'create', game: 'uno', name: 'A', avatar: 'cat' }))).toBe('already_in_room');
@@ -433,5 +433,98 @@ describe('abuse and cleanup', () => {
     w.hub.dispose();
     expect(l.conns[0]!.closed).toEqual([{ reason: 'shutdown' }]);
     expect(w.hub.stats().rooms).toBe(0);
+  });
+});
+
+describe('trivia, word bomb and werewolf online', () => {
+  const start = (w: W, l: ReturnType<typeof lobby>) => okAck(send(w, l.conns[0]!, { type: 'start' }));
+
+  it('trivia: hides the key, reveals when all answered, and the clock moves it on', () => {
+    const w = world();
+    const l = lobby(w, 'trivia', 3, { questions: 3 });
+    start(w, l);
+    const c0 = l.conns[0]!;
+    expect(pub(c0).phase).toBe('question');
+    expect(pub(c0).correct).toBeNull();
+    expect(JSON.stringify(gameOf(c0))).not.toContain('"answer"');
+    for (const c of l.conns) okAck(send(w, c, { type: 'action', action: { type: 'answer', choice: 0 } }));
+    expect(codeOf(send(w, c0, { type: 'action', action: { type: 'answer', choice: 1 } }))).toBe('wrong_phase');
+    expect(pub(c0).phase).toBe('reveal');
+    expect(pub(c0).correct).toBeGreaterThanOrEqual(0);
+    w.advance(6_000);
+    expect(pub(c0).phase).toBe('question');
+    expect(pub(c0).index).toBe(1);
+    w.advance(20_000);
+    expect(pub(c0).phase).toBe('reveal');
+    expect(codeOf(send(w, c0, { type: 'action', action: { type: 'kill', target: 'x' } as never }))).toBe('bad_action');
+  });
+
+  it('word bomb: only the holder plays, and an unplayed bomb explodes', () => {
+    const w = world();
+    const l = lobby(w, 'wordbomb', 3, { fuseSeconds: 5 });
+    start(w, l);
+    const first = pub(l.conns[0]!);
+    const holder = byId(l, first.turn);
+    const other = l.conns.find((c) => c !== holder)!;
+    expect(codeOf(send(w, other, { type: 'action', action: { type: 'word', text: 'whatever' } }))).toBe('not_your_turn');
+    expect(codeOf(send(w, holder, { type: 'action', action: { type: 'word', text: 'qxjkv' } }))).toBe('missing_fragment');
+    w.advance(5_100);
+    const after = pub(l.conns[0]!);
+    expect(after.lives[first.turn]).toBe(2);
+    expect(after.turn).not.toBe(first.turn);
+    expect(after.events.at(-1).kind).toBe('exploded');
+  });
+
+  it('werewolf: roles stay private and the server confirms the role reveal for an absent player', () => {
+    const w = world();
+    const l = lobby(w, 'werewolf', 5);
+    start(w, l);
+    const roles = l.conns.map((c) => priv(c).role as string);
+    expect(roles.filter((r) => r === 'werewolf')).toHaveLength(1);
+    for (const c of l.conns) {
+      const mine = priv(c).role as string;
+      const t = c.transcript;
+      if (mine !== 'werewolf') expect(priv(c).pack).toEqual([]);
+      expect(pub(c)).not.toHaveProperty('roles');
+      expect(t).not.toContain('"outcome":{');
+    }
+    const away = l.conns[4]!;
+    w.hub.disconnect(away);
+    for (const c of l.conns.slice(0, 4)) okAck(send(w, c, { type: 'action', action: { type: 'ack-role' } }));
+    expect(pub(l.conns[0]!).phase).toBe('roles');
+    w.advance(16_000);
+    expect(pub(l.conns[0]!).phase).toBe('night');
+  });
+
+  it('would you rather: hides votes until everyone has voted', () => {
+    const w = world();
+    const l = lobby(w, 'wyr', 3, { rounds: 3 });
+    start(w, l);
+    const [c0, c1, c2] = l.conns as [typeof l.conns[0], typeof l.conns[0], typeof l.conns[0]];
+    okAck(send(w, c0, { type: 'action', action: { type: 'vote', choice: 1 } }));
+    expect(pub(c1).tally).toBeNull();
+    expect(pub(c1).picks).toEqual({});
+    expect(codeOf(send(w, c0, { type: 'action', action: { type: 'vote', choice: 0 } }))).toBe('already_voted');
+    okAck(send(w, c1, { type: 'action', action: { type: 'vote', choice: 1 } }));
+    okAck(send(w, c2, { type: 'action', action: { type: 'vote', choice: 0 } }));
+    expect(pub(c0).phase).toBe('reveal');
+    expect(pub(c0).tally).toEqual([1, 2]);
+  });
+
+  it('memory: face-down cards carry no symbols, and a stalled turn passes on', () => {
+    const w = world();
+    const l = lobby(w, 'memory', 2);
+    start(w, l);
+    const first = pub(l.conns[0]!);
+    expect(first.cards.every((c: { symbol: string | null }) => c.symbol === null)).toBe(true);
+    const holder = byId(l, first.turn);
+    const other = l.conns.find((c) => c !== holder)!;
+    expect(codeOf(send(w, other, { type: 'action', action: { type: 'flip', index: 0 } }))).toBe('not_your_turn');
+    okAck(send(w, holder, { type: 'action', action: { type: 'flip', index: 0 } }));
+    expect(pub(other).cards.filter((c: { symbol: string | null }) => c.symbol !== null)).toHaveLength(1);
+    w.advance(15_100);
+    const after = pub(l.conns[0]!);
+    expect(after.turn).not.toBe(first.turn);
+    expect(after.cards.every((c: { symbol: string | null }) => c.symbol === null)).toBe(true);
   });
 });

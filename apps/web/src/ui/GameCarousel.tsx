@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { MODE_LABELS, type GameMeta } from '@party/game-registry';
@@ -6,7 +6,8 @@ import { GameArt } from './GameArt';
 import { StatusBadge, playersLabel } from './GameBits';
 import type { Fit } from './GameCard';
 
-function Slide({ game: g, fit, active, index, count, clone }: { game: GameMeta; fit: Fit; active: boolean; index: number; count: number; clone: boolean }) {
+/** Memoised: while scrolling only the two slides whose `active` flag flips re-render, not all of them. */
+const Slide = memo(function Slide({ game: g, fit, active, index, count, clone }: { game: GameMeta; fit: Fit; active: boolean; index: number; count: number; clone: boolean }) {
   const soon = g.status !== 'playable';
   // Art follows the pointer a little: sets --px / --py (-1 to 1) on the art element, no re-render.
   const tilt = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -54,7 +55,7 @@ function Slide({ game: g, fit, active, index, count, clone }: { game: GameMeta; 
       </Link>
     </li>
   );
-}
+});
 
 const arrow = 'btn btn-secondary !h-12 !w-12 !min-h-0 !rounded-full !px-0 sm:!h-14 sm:!w-14';
 
@@ -71,17 +72,22 @@ export function GameCarousel({ games, fitOf }: { games: readonly GameMeta[]; fit
   const [pos, setPos] = useState(loop ? n : 0);
   const ids = games.map((g) => g.id).join(',');
 
+  // Slides are all the same width, so the nearest slide is plain arithmetic on scrollLeft. Measuring every slide on
+  // every scroll frame forces a layout each time, which is what made swiping stutter on phones.
+  const metrics = useRef({ first: 0, step: 1 });
+  const measure = useCallback(() => {
+    const el = track.current;
+    const a = el?.children[0] as HTMLElement | undefined;
+    if (!el || !a) return;
+    const b = el.children[1] as HTMLElement | undefined;
+    metrics.current = { first: a.offsetLeft + a.offsetWidth / 2, step: b ? b.offsetLeft - a.offsetLeft : a.offsetWidth };
+  }, []);
   const nearest = useCallback(() => {
     const el = track.current;
     if (!el) return 0;
-    const mid = el.scrollLeft + el.clientWidth / 2;
-    let best = 0, dist = Infinity;
-    Array.from(el.children).forEach((c, i) => {
-      const s = c as HTMLElement;
-      const d = Math.abs(s.offsetLeft + s.offsetWidth / 2 - mid);
-      if (d < dist) { dist = d; best = i; }
-    });
-    return best;
+    const { first, step } = metrics.current;
+    const i = Math.round((el.scrollLeft + el.clientWidth / 2 - first) / (step || 1));
+    return Math.max(0, Math.min(el.children.length - 1, i));
   }, []);
 
   const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches && document.documentElement.dataset.motion !== 'full' || document.documentElement.dataset.motion === 'reduce';
@@ -96,17 +102,17 @@ export function GameCarousel({ games, fitOf }: { games: readonly GameMeta[]; fit
   // New list (e.g. a different group size): start on the first game of the middle copy.
   useLayoutEffect(() => {
     const start = loop ? n : 0;
+    measure();
     scrollToIndex(start, false);
     setPos(start);
-  }, [ids, loop, n, scrollToIndex]);
+  }, [ids, loop, n, measure, scrollToIndex]);
 
   useEffect(() => {
     const el = track.current;
     if (!el) return;
     let raf = 0, settle = 0;
     const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => setPos(nearest()));
+      if (!raf) raf = requestAnimationFrame(() => { raf = 0; setPos(nearest()); });
       window.clearTimeout(settle);
       settle = window.setTimeout(() => {
         // Scrolling stopped. If we are in an outer copy, jump to the identical slide in the middle copy.
@@ -119,11 +125,11 @@ export function GameCarousel({ games, fitOf }: { games: readonly GameMeta[]; fit
         setPos(target);
       }, 140);
     };
-    const onResize = () => scrollToIndex(nearest(), false);
+    const onResize = () => { const p = nearest(); measure(); scrollToIndex(p, false); };
     el.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     return () => { cancelAnimationFrame(raf); window.clearTimeout(settle); el.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize); };
-  }, [loop, n, nearest, scrollToIndex]);
+  }, [loop, n, measure, nearest, scrollToIndex]);
 
   const total = copies * n;
   const goTo = (i: number) => scrollToIndex(Math.max(0, Math.min(total - 1, i)), true);

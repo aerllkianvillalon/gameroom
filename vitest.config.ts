@@ -12,6 +12,11 @@ export default defineConfig({
       '@party/protocol': p('./packages/protocol/src/index.ts'),
       '@party/impostor-engine': p('./packages/impostor-engine/src/index.ts'),
       '@party/uno-engine': p('./packages/uno-engine/src/index.ts'),
+      '@party/trivia-engine': p('./packages/trivia-engine/src/index.ts'),
+      '@party/wordbomb-engine': p('./packages/wordbomb-engine/src/index.ts'),
+      '@party/werewolf-engine': p('./packages/werewolf-engine/src/index.ts'),
+      '@party/wyr-engine': p('./packages/wyr-engine/src/index.ts'),
+      '@party/memory-engine': p('./packages/memory-engine/src/index.ts'),
     },
   },
   test: {

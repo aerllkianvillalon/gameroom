@@ -52,6 +52,89 @@ export function GameArt({ id, accent, className = '', style }: { id: string; acc
             </span>
           </div>
         </div>
+      ) : id === 'trivia' ? (
+        <div className="absolute inset-0">
+          {/* A question card with four answers, one lit green, and a score chip */}
+          <span className="par par-3 absolute font-display font-extrabold leading-none text-white/25" style={{ left: '8%', top: '10%', fontSize: '30cqh', rotate: '-12deg' }}>?</span>
+          <div className="par par-1 absolute inset-0">
+            <div className="absolute left-1/2 top-[14%] flex flex-col" style={{ width: '112cqh', translate: '-50% 0', rotate: '-3deg', background: 'rgb(var(--ink-950))', borderRadius: '9cqh', padding: '7cqh', gap: '4.5cqh', boxShadow: '0 2cqh 0 rgb(0 0 0 / .3)' }}>
+              <span className="block" style={{ height: '5cqh', width: '78%', borderRadius: '9999px', background: 'rgb(var(--paper))' }} />
+              <span className="block" style={{ height: '5cqh', width: '46%', borderRadius: '9999px', background: 'rgb(var(--paper) / .55)' }} />
+              <div className="grid grid-cols-2" style={{ gap: '3cqh', marginTop: '2cqh' }}>
+                {['A', 'B', 'C', 'D'].map((l, i) => (
+                  <span key={l} className={`flex items-center font-display font-extrabold`} style={{ gap: '2.5cqh', height: '13cqh', borderRadius: '5cqh', padding: '0 3.5cqh', fontSize: '7cqh', background: i === 2 ? 'rgb(var(--card-green))' : 'rgb(var(--paper) / .14)', color: i === 2 ? 'rgb(var(--ink-950))' : 'rgb(var(--paper))' }}>
+                    {l}<span className="block" style={{ height: '2.6cqh', flex: 1, borderRadius: '9999px', background: i === 2 ? 'rgb(var(--ink-950) / .45)' : 'rgb(var(--paper) / .35)' }} />
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="par par-1 absolute inset-0">
+            <span className="absolute font-display font-extrabold text-ink-950" style={{ right: '9%', top: '12%', fontSize: '11cqh', rotate: '9deg', background: 'rgb(var(--paper))', padding: '2cqh 5cqh', borderRadius: '9999px', boxShadow: '0 1.4cqh 0 rgb(0 0 0 / .25)' }}>+100</span>
+          </div>
+        </div>
+      ) : id === 'wordbomb' ? (
+        <div className="absolute inset-0">
+          {/* A lit bomb, with letter tiles scattered around it */}
+          <div className="par par-3 absolute inset-0">
+            {[{ l: '10%', t: '16%', c: 'T', r: -14 }, { l: '86%', t: '22%', c: 'R', r: 12 }, { l: '78%', t: '66%', c: 'E', r: -8 }, { l: '14%', t: '64%', c: 'A', r: 10 }].map((x) => (
+              <span key={x.c} className="absolute flex items-center justify-center font-display font-extrabold text-ink-950" style={{ left: x.l, top: x.t, width: '19cqh', height: '19cqh', borderRadius: '4cqh', rotate: `${x.r}deg`, fontSize: '12cqh', background: 'rgb(var(--paper) / .85)', boxShadow: '0 1.2cqh 0 rgb(0 0 0 / .25)' }}>{x.c}</span>
+            ))}
+          </div>
+          <div className="par par-1 absolute inset-0">
+            <span className="absolute left-1/2" style={{ top: '6%', width: '3.6cqh', height: '17cqh', translate: '14cqh 0', rotate: '28deg', transformOrigin: 'bottom', background: 'rgb(var(--paper) / .9)', borderRadius: '9999px' }} />
+            <span className="absolute left-1/2" style={{ top: '1%', width: '11cqh', height: '11cqh', translate: '17.5cqh 0', rotate: '45deg', background: 'rgb(var(--card-yellow))', clipPath: 'polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%)' }} />
+            <span className="absolute left-1/2 flex items-center justify-center font-display font-extrabold uppercase text-paper" style={{ top: '18%', width: '66cqh', height: '66cqh', translate: '-50% 0', borderRadius: '50%', fontSize: '19cqh', letterSpacing: '0.02em', background: 'radial-gradient(circle at 34% 30%, rgb(255 255 255 / .22), transparent 38%), rgb(var(--ink-950))', boxShadow: '0 2cqh 0 rgb(0 0 0 / .3)' }}>ING</span>
+          </div>
+        </div>
+      ) : id === 'werewolf' ? (
+        <div className="absolute inset-0">
+          {/* Night sky: moon, stars and a dark ridge */}
+          <div className="par par-3 absolute inset-0">
+            {[{ l: '12%', t: '14%', s: 3 }, { l: '28%', t: '30%', s: 2 }, { l: '40%', t: '9%', s: 2.4 }, { l: '88%', t: '48%', s: 2.6 }, { l: '70%', t: '12%', s: 2 }, { l: '6%', t: '46%', s: 2.2 }].map((d, i) => (
+              <span key={i} className="absolute rounded-full" style={{ left: d.l, top: d.t, width: `${d.s}cqh`, height: `${d.s}cqh`, background: 'rgb(255 255 255 / .8)' }} />
+            ))}
+          </div>
+          <div className="par par-2 absolute inset-0">
+            <span className="absolute rounded-full" style={{ left: '56%', top: '9%', width: '46cqh', height: '46cqh', background: 'rgb(var(--paper))', boxShadow: '0 0 0 4cqh rgb(255 255 255 / .12), 0 0 0 9cqh rgb(255 255 255 / .07)' }}>
+              <span className="absolute rounded-full" style={{ left: '14%', top: '58%', width: '11cqh', height: '11cqh', background: 'rgb(0 0 0 / .08)' }} />
+              <span className="absolute rounded-full" style={{ left: '52%', top: '22%', width: '8cqh', height: '8cqh', background: 'rgb(0 0 0 / .08)' }} />
+            </span>
+          </div>
+          <div className="par par-1 absolute inset-0">
+            <span className="absolute inset-x-0 bottom-0" style={{ height: '46%', background: 'rgb(var(--ink-950))', clipPath: 'polygon(0 55%, 14% 30%, 30% 52%, 46% 20%, 62% 48%, 80% 26%, 100% 50%, 100% 100%, 0 100%)' }} />
+          </div>
+        </div>
+      ) : id === 'wyr' ? (
+        <div className="absolute inset-0">
+          {/* Two choices facing off: blue A against red B, with a vote bubble */}
+          <span className="par par-3 absolute font-display font-extrabold leading-none text-white/25" style={{ left: '6%', top: '8%', fontSize: '26cqh', rotate: '-10deg' }}>?</span>
+          <div className="par par-1 absolute inset-0">
+            <div className="absolute flex items-center font-display font-extrabold" style={{ left: '7%', top: '17%', width: '78cqh', height: '30cqh', borderRadius: '8cqh', padding: '0 6cqh', gap: '4cqh', fontSize: '15cqh', rotate: '-5deg', background: 'rgb(var(--card-blue))', color: 'rgb(var(--ink-950))', boxShadow: '0 2cqh 0 rgb(0 0 0 / .3)' }}>
+              A<span className="block" style={{ height: '4cqh', flex: 1, borderRadius: '9999px', background: 'rgb(var(--ink-950) / .4)' }} />
+            </div>
+            <div className="absolute flex items-center font-display font-extrabold" style={{ right: '7%', top: '49%', width: '78cqh', height: '30cqh', borderRadius: '8cqh', padding: '0 6cqh', gap: '4cqh', fontSize: '15cqh', rotate: '4deg', background: 'rgb(var(--card-red))', color: 'rgb(var(--ink-950))', boxShadow: '0 2cqh 0 rgb(0 0 0 / .3)' }}>
+              B<span className="block" style={{ height: '4cqh', flex: 1, borderRadius: '9999px', background: 'rgb(var(--ink-950) / .4)' }} />
+            </div>
+            <span className="absolute left-1/2 top-1/2 flex items-center justify-center font-display font-extrabold text-ink-950" style={{ width: '24cqh', height: '24cqh', translate: '-50% -50%', borderRadius: '50%', fontSize: '9cqh', background: 'rgb(var(--paper))', boxShadow: '0 1.4cqh 0 rgb(0 0 0 / .3)' }}>OR</span>
+          </div>
+        </div>
+      ) : id === 'memory' ? (
+        <div className="absolute inset-0">
+          {/* A grid of cards: two flipped to a matching pair, the rest face down */}
+          <div className="par par-1 absolute inset-0">
+            <div className="absolute left-1/2 top-[11%] grid grid-cols-4" style={{ width: '120cqh', translate: '-50% 0', gap: '4cqh', rotate: '-3deg' }}>
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+                const up = i === 1 || i === 6;
+                return (
+                  <span key={i} className="flex items-center justify-center font-display font-extrabold" style={{ aspectRatio: '1', borderRadius: '5cqh', fontSize: up ? '14cqh' : '9cqh', background: up ? 'rgb(var(--paper))' : 'rgb(var(--ink-950))', color: up ? 'rgb(var(--ink-950))' : 'rgb(var(--paper) / .35)', boxShadow: '0 1.4cqh 0 rgb(0 0 0 / .3)', outline: up ? '1.2cqh solid rgb(var(--card-yellow))' : 'none' }}>
+                    {up ? '★' : '?'}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       ) : (
         <div className="absolute inset-0">
           <span className="par par-3 absolute -right-[8cqh] -bottom-[14cqh] text-white/20" style={{ rotate: '12deg' }}><GameIcon id={id} size={200} /></span>

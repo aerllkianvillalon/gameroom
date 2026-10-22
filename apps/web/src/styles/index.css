@@ -163,12 +163,16 @@ body { overflow-x: clip; }
 
 @layer components {
 /* ---------- Background: one pool of light over the table ---------- */
-:root { --glow: #f0484f; transition: --glow 800ms ease; }
+:root { --glow: #f0484f; }
+/* Only the pool fades between colours. Animating --glow on the root restyled the whole page on every frame. */
+@property --pool { syntax: '<color>'; inherits: false; initial-value: #f0484f; }
 .ambient { --lx: 0; --ly: 0; background: rgb(var(--ink-900)); }
 .ambient-pool {
   position: absolute; left: 50%; top: -18vmax; width: 120vmax; height: 90vmax; translate: calc(-50% + var(--lx) * 24px) calc(var(--ly) * 14px);
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--glow) 34%, transparent), color-mix(in srgb, var(--glow) 10%, transparent) 55%, transparent 100%);
-  transition: translate 1600ms var(--ease-out);
+  --pool: var(--glow);
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--pool) 34%, transparent), color-mix(in srgb, var(--pool) 10%, transparent) 55%, transparent 100%);
+  transition: translate 1600ms var(--ease-out), --pool 600ms ease;
+  will-change: translate;
 }
 .ambient-pool-2 { position: absolute; left: -30vmax; bottom: -40vmax; width: 90vmax; height: 90vmax; background: radial-gradient(closest-side, rgb(var(--card-blue) / .16), transparent); }
 .ambient-dots {
@@ -281,10 +285,10 @@ html[data-motion='reduce'] .ambient-pool { transition: none; translate: -50% 0; 
 .art-pawn::before { content: ''; position: absolute; left: 50%; top: -34%; width: 64%; aspect-ratio: 1; translate: -50% 0; border-radius: 9999px; background: inherit; box-shadow: inherit; }
 
 /* ---------- Game slideshow ---------- */
-.carousel-track { scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.carousel-track { scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
 .carousel-track::-webkit-scrollbar { display: none; }
-.carousel-slide > a { transition: transform 360ms var(--ease-out), opacity 300ms, filter 300ms; }
-.carousel-slide[data-active='false'] > a { transform: scale(0.92); opacity: 0.5; filter: saturate(.7); }
+.carousel-slide > a { transition: transform 360ms var(--ease-out), opacity 300ms; will-change: transform, opacity; }
+.carousel-slide[data-active='false'] > a { transform: scale(0.92); opacity: 0.5; }
 .carousel-track:focus-visible { outline-offset: -4px; border-radius: 1.5rem; }
 .carousel-art-card { transition: transform 500ms var(--ease-out); }
 .carousel-slide[data-active='true'] .carousel-art-card.a { transform: rotate(-12deg) translate(-26%, 4%); }
@@ -338,4 +342,21 @@ html[data-contrast='high'] .game-card[data-fit='nofit'] .game-art { filter: none
 
 /* Safe areas for the fixed tab bar */
 
+}
+/* Game card polish: art zooms a touch on hover. */
+.game-card .art-frame { position: relative; overflow: hidden; }
+.game-card .art-frame::after { content: ''; position: absolute; inset: auto 0 0 0; height: 38%; pointer-events: none; background: linear-gradient(to top, rgb(var(--ink-800)), transparent); }
+@media (prefers-reduced-motion: no-preference) {
+  .game-card .game-art { transition: transform 500ms var(--ease-out); }
+  .game-card:hover .game-art, .game-card:focus-visible .game-art { transform: scale(1.05); }
+}
+
+/* ---------- Phones and tablets: skip the effects that are costly to repaint while scrolling ---------- */
+@media (hover: none) {
+  /* A blended full-screen grain layer and live-blurred bars force the GPU to re-composite every scroll frame. */
+  .ambient-grain { display: none; }
+  .topbar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--ink-950) / .96); }
+  .tabbar-inner { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--ink-950) / .97); }
+  /* Change the glow colour at once instead of repainting the big gradient for 600ms. */
+  .ambient-pool { transition: translate 1600ms var(--ease-out); }
 }

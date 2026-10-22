@@ -10,8 +10,13 @@
   },
   "dependencies": {
     "@party/game-engine": "*",
-    "@party/uno-engine": "*",
     "@party/impostor-engine": "*",
+    "@party/memory-engine": "*",
+    "@party/trivia-engine": "*",
+    "@party/uno-engine": "*",
+    "@party/werewolf-engine": "*",
+    "@party/wordbomb-engine": "*",
+    "@party/wyr-engine": "*",
     "zod": "^3.23.8"
   },
   "exports": {

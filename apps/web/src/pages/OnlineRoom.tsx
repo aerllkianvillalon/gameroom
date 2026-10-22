@@ -4,12 +4,22 @@ import { Bot, Copy, Crown, X } from 'lucide-react';
 import type { PlayerId } from '@party/game-engine';
 import type { ImpostorAction, ImpostorPrivateView, ImpostorPublicView } from '@party/impostor-engine';
 import type { UnoAction, UnoPrivateView, UnoPublicView } from '@party/uno-engine';
+import type { TriviaAction, TriviaPrivateView, TriviaPublicView } from '@party/trivia-engine';
+import type { WordBombAction, WordBombPrivateView, WordBombPublicView } from '@party/wordbomb-engine';
+import type { WerewolfAction, WerewolfPrivateView, WerewolfPublicView } from '@party/werewolf-engine';
+import type { WyrAction, WyrPrivateView, WyrPublicView } from '@party/wyr-engine';
+import type { MemoryAction, MemoryPrivateView, MemoryPublicView } from '@party/memory-engine';
 import { getGame } from '@party/game-registry';
 import { Button, LinkButton } from '../ui/Button';
 import { Avatar } from '../ui/Avatar';
 import { SettingsForm } from '../components/SettingsForm';
 import { UnoBoard } from '../games/uno/UnoBoard';
 import { OnlineImpostor } from './OnlineImpostor';
+import { OnlineTrivia } from '../games/trivia/OnlineTrivia';
+import { OnlineWordBomb } from '../games/wordbomb/OnlineWordBomb';
+import { OnlineWerewolf } from '../games/werewolf/OnlineWerewolf';
+import { OnlineWyr } from '../games/wyr/OnlineWyr';
+import { OnlineMemory } from '../games/memory/OnlineMemory';
 import { useOnline } from '../hooks/useOnlineClient';
 import { useSecondsLeft } from '../hooks/useSecondsLeft';
 import { usePacks } from '../hooks/usePacks';
@@ -159,6 +169,22 @@ function OnlineGame() {
         send={async (a: ImpostorAction) => { const r = await client.action(a); return r.ok ? null : r.message; }}
       />
     );
+  }
+  const shared = { me: room.you, isHost, nameOf, avatarOf, skewMs: st.skewMs, onLeave: leave, onBack: toLobby };
+  if (room.gameId === 'trivia') {
+    return <OnlineTrivia {...shared} pub={g.public as TriviaPublicView} priv={g.private as TriviaPrivateView} send={async (a: TriviaAction) => { const r = await client.action(a); return r.ok ? null : r.message; }} />;
+  }
+  if (room.gameId === 'wordbomb') {
+    return <OnlineWordBomb {...shared} pub={g.public as WordBombPublicView} priv={g.private as WordBombPrivateView} send={async (a: WordBombAction) => { const r = await client.action(a); return r.ok ? null : r.message; }} />;
+  }
+  if (room.gameId === 'werewolf') {
+    return <OnlineWerewolf {...shared} pub={g.public as WerewolfPublicView} priv={g.private as WerewolfPrivateView} send={async (a: WerewolfAction) => { const r = await client.action(a); return r.ok ? null : r.message; }} />;
+  }
+  if (room.gameId === 'wyr') {
+    return <OnlineWyr {...shared} pub={g.public as WyrPublicView} priv={g.private as WyrPrivateView} send={async (a: WyrAction) => { const r = await client.action(a); return r.ok ? null : r.message; }} />;
+  }
+  if (room.gameId === 'memory') {
+    return <OnlineMemory {...shared} pub={g.public as MemoryPublicView} priv={g.private as MemoryPrivateView} send={async (a: MemoryAction) => { const r = await client.action(a); return r.ok ? null : r.message; }} />;
   }
   return <OnlineUno pub={g.public as UnoPublicView} priv={g.private as UnoPrivateView} me={room.you} skewMs={st.skewMs} isHost={isHost} nameOf={nameOf} avatarOf={avatarOf} onLeave={leave} onBack={toLobby} />;
 }

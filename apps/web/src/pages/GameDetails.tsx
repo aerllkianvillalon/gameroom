@@ -29,8 +29,8 @@ export function GameDetails() {
           <div className="mt-7">
             {canCreateRoom(g) ? (
               <div className="flex flex-col gap-3 sm:flex-row">
-                <LinkButton to={`/create?game=${g.id}`} className="btn-lg">Play on this device</LinkButton>
-                {g.modes.includes('online') && <LinkButton to={`/create?game=${g.id}&mode=online`} variant="secondary" className="btn-lg">Play online with a code</LinkButton>}
+                {g.modes.some((m) => m === 'pass-and-play' || m === 'bots') && <LinkButton to={`/create?game=${g.id}`} className="btn-lg">Play on this device</LinkButton>}
+                {g.modes.includes('online') && <LinkButton to={`/create?game=${g.id}&mode=online`} variant={g.modes.includes('pass-and-play') || g.modes.includes('bots') ? 'secondary' : 'primary'} className="btn-lg">Play online with a code</LinkButton>}
               </div>
             ) : (
               <div className="panel-flat p-5">

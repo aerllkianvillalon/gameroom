@@ -1,9 +1,14 @@
 import type { AvatarId, PlayerId, SettingValue } from '@party/game-engine';
 import type { UnoAction } from '@party/uno-engine';
 import type { ImpostorAction } from '@party/impostor-engine';
+import type { TriviaAction } from '@party/trivia-engine';
+import type { WordBombAction } from '@party/wordbomb-engine';
+import type { WerewolfAction } from '@party/werewolf-engine';
+import type { WyrAction } from '@party/wyr-engine';
+import type { MemoryAction } from '@party/memory-engine';
 
-export type GameId = 'uno' | 'impostor';
-export type GameAction = UnoAction | ImpostorAction;
+export type GameId = 'uno' | 'impostor' | 'trivia' | 'wordbomb' | 'werewolf' | 'wyr' | 'memory';
+export type GameAction = UnoAction | ImpostorAction | TriviaAction | WordBombAction | WerewolfAction | WyrAction | MemoryAction;
 export type Settings = Record<string, SettingValue>;
 export interface CustomPack { name: string; words: string[] }
 

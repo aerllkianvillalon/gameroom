@@ -20,6 +20,27 @@ export const ImpostorActionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('guess'), text: z.string().max(100) }),
 ]);
 
+export const TriviaActionSchema = z.object({ type: z.literal('answer'), choice: z.number().int().min(0).max(3) });
+
+export const WordBombActionSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('word'), text: z.string().max(60) }),
+  z.object({ type: z.literal('challenge') }),
+  z.object({ type: z.literal('judge'), valid: z.boolean() }),
+]);
+
+export const WyrActionSchema = z.object({ type: z.literal('vote'), choice: z.union([z.literal(0), z.literal(1)]) });
+
+export const MemoryActionSchema = z.object({ type: z.literal('flip'), index: z.number().int().min(0).max(23) });
+
+export const WerewolfActionSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('ack-role') }),
+  z.object({ type: z.literal('kill'), target: id }),
+  z.object({ type: z.literal('inspect'), target: id }),
+  z.object({ type: z.literal('protect'), target: id }),
+  z.object({ type: z.literal('skip-discussion') }),
+  z.object({ type: z.literal('vote'), target: id }),
+]);
+
 const settingValue = z.union([z.string().max(60), z.number().finite(), z.boolean()]);
 const settings = z.record(z.string().max(40), settingValue).refine((o) => Object.keys(o).length <= 20, 'Too many settings');
 const avatar = z.enum(AVATAR_IDS);
@@ -27,7 +48,7 @@ const name = z.string().max(64);
 const code = z.string().min(1).max(16);
 
 export const ClientMessageSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('create'), game: z.enum(['uno', 'impostor']), name, avatar, settings: settings.optional(), password: z.string().max(32).optional() }),
+  z.object({ type: z.literal('create'), game: z.enum(['uno', 'impostor', 'trivia', 'wordbomb', 'werewolf', 'wyr', 'memory']), name, avatar, settings: settings.optional(), password: z.string().max(32).optional() }),
   z.object({ type: z.literal('join'), code, name, avatar, password: z.string().max(32).optional() }),
   z.object({ type: z.literal('resume'), code, token: z.string().min(8).max(128) }),
   z.object({ type: z.literal('ready'), ready: z.boolean() }),
@@ -35,7 +56,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('add-bot') }),
   z.object({ type: z.literal('kick'), playerId: id }),
   z.object({ type: z.literal('start'), pack: z.object({ name: z.string().max(30), words: z.array(z.string().max(30)).max(200) }).optional() }),
-  z.object({ type: z.literal('action'), action: z.union([UnoActionSchema, ImpostorActionSchema]) }),
+  z.object({ type: z.literal('action'), action: z.union([UnoActionSchema, ImpostorActionSchema, TriviaActionSchema, WordBombActionSchema, WerewolfActionSchema, WyrActionSchema, MemoryActionSchema]) }),
   z.object({ type: z.literal('back-to-lobby') }),
   z.object({ type: z.literal('leave') }),
 ]);
